@@ -252,25 +252,33 @@ API), not a new container.
 - Parallel execution across test classes (Cajeta async/fibers); per-test isolation via
   fresh component scopes.
 
-## 9. Key dependency / open question — annotation support
+## 9. Annotation support — RESOLVED (2026-06-16)
 
-The one real risk. Today **user-defined annotations are largely inert** (parse-only;
-`@interface` element methods not registered — `CajetaLlvmVisitor.h:1678`), usable mainly as
-**aspect pointcuts**. cajeta-unit's `@Test`/`@Mock`/`@ParameterizedTest` need one of:
+This was logged as the framework's #1 risk ("annotations are largely inert"). It turned
+out to be **stale** — the reflection work already provides everything `@Test` discovery
+needs, and the one genuine bug was fixed:
 
-1. **Reflective discovery** — enumerate classes (`Class`/reflection is shipped), find
-   methods carrying `@Test`, invoke via `Method.invoke*` (shipped). Requires user
-   annotations to be **reflectable** (annotation metadata queryable at runtime). *Verify
-   this is possible; if not, it's the first thing to fix.*
-2. **Compiler-recognized test annotations** — treat `@Test` et al. like `@Component`
-   (first-class), with the compiler emitting a discovery registry. Cleanest, but a compiler
-   change.
-3. **Aspect + registration hybrid** — `@Test` as an aspect pointcut that registers the
-   method into a runtime registry the runner reads. Uses shipped machinery; least new work.
+- **Reflective discovery works.** `Class.allClasses()` enumerates classes; `Method`/`Class`/
+  `Constructor` `getAnnotationName(i)` surface annotation **names**; `Annotation.getArgInt/
+  getArgString/getArgBool/getArgList*` surface annotation **element values** (incl. list
+  args like `@ValueSource(ints={…})`) — all covered by passing `ReflectionTests`.
+- **Static method invoke was the real gap** — the invoke adapter was resolved from the
+  (null) receiver, so static methods no-op'd. Fixed in the compiler (`fix/reflect-static-
+  invoke`): the adapter now resolves from the method's RTTI. Static `@Test` methods execute
+  and propagate `AssertionFailure`/`RecoverableException` (incl. `e.message`) cleanly.
+- **Instance `@Test` works too** — `Class.heapInstance(ctorIndex)` / `Constructor.
+  heapInstance()` reflectively construct an instance; `Method.invokeObject(instance)` then
+  invokes an instance `@Test` method on it. End-to-end verified.
 
-**Recommendation:** start with (3)/(1) to avoid blocking on compiler work; pursue (2) for a
-polished v1. The mocking codegen (§5) similarly needs an annotation-processing hook — track
-both as the framework's primary language dependency.
+So `@Test` discovery (the reflective approach, option 1) needs **no further compiler work**.
+The runner is built on `allClasses` → methods annotated `@Test` → `invokeObject`; lifecycle
+(`@BeforeEach`/`@Disabled`/`@Tag`) and parameterized sources read element values via
+`Annotation.getArg*`. A compiler-recognized test registry (emitting discovery, like
+`@Component`) remains a *future optimization* over the startup scan, not a prerequisite.
+
+**Still genuinely new:** `@Mock` codegen (§5) needs an annotation-processing/codegen hook —
+that is the one remaining language dependency (hand-written `@TestComponent` fakes bridge it
+meanwhile). See `../../cajeta/plans/DI-request-scope-and-test-enablers.md`.
 
 ## 10. Out of scope / future
 - Property-based / fuzz / snapshot testing (hooks only).
