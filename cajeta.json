@@ -59,7 +59,7 @@
         "test": {
             "description": "Build + run the library's unit tests (fails on any failure)",
             "actions": [
-                { "action": "build", "flavor": "debug",
+                { "action": "build", "flavor": "debug", "profile": "test",
                   "entry-method": "org.cajeta.unit.selftest.SelfTest.run",
                   "id": "testbin" },
                 { "action": "test", "input": "${testbin.path}" }

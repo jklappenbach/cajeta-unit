@@ -1,0 +1,55 @@
+package org.cajeta.unit;
+
+/**
+ * Overrides what `@Inject` resolves to, for tests.
+ *
+ * `@Inject` is the language's neutral dependency-injection *point*; its
+ * resolution is normally wired statically by the compiler to a provider. In a
+ * **test build** (`--profile=test`) the compiler also emits, at each `@Inject`
+ * site, a check of a runtime override registry. `TestContext` is the front door
+ * to that registry: bind a substitute (a mock or fake) for a type and any
+ * `@Inject` field of that type resolves to your substitute instead of the real
+ * provider.
+ *
+ * ```cajeta
+ * MockClock clock = heap MockClock();
+ * TestContext.bind(Clock.class, clock);   // every @Inject Clock now gets `clock`
+ * // ... exercise the component under test ...
+ * TestContext.clear();                     // forget overrides between tests
+ * ```
+ *
+ * The registry holds a **borrowed** pointer: you own the substitute for the
+ * test's duration; `clear()` forgets bindings, it never frees your objects.
+ * Bind before the component under test is constructed (injection happens at
+ * construction time).
+ *
+ * **v1 scope:** singleton-mode, class-typed `@Inject` fields — mock a type by
+ * subclassing it and overriding its (virtual) methods. Interface-typed fields
+ * are not yet overridable (they need a fat-pointer-aware registry). Overrides
+ * only take effect in a build compiled with `--profile=test`; in a production
+ * build the registry isn't consulted and these calls are inert.
+ */
+public class TestContext {
+
+    // The registry is keyed by the type's reflect.Class object (what `T.class`
+    // lowers to). The Class reference and the instance both cross the native
+    // boundary as their raw object pointers.
+    @Native("__cajeta_inject_override_bind")
+    private static void bindNative(Object type, Object instance);
+
+    @Native("__cajeta_inject_override_clear")
+    private static void clearNative();
+
+    /**
+     * Bind `instance` as the resolution for `@Inject` sites of type `T`.
+     * Re-binding the same type replaces the previous substitute.
+     */
+    public static void bind<T>(Class<T> type, T instance) {
+        TestContext.bindNative(type, instance);
+    }
+
+    /** Forget all overrides. Call between tests so bindings don't leak across cases. */
+    public static void clear() {
+        TestContext.clearNative();
+    }
+}

@@ -1,0 +1,15 @@
+package org.cajeta.unit.selftest.inject;
+
+/**
+ * A hand-written test double: subclasses the real component and overrides its
+ * virtual method. NOT a @Component — the test instantiates it and binds it via
+ * TestContext so @Inject resolves to it.
+ */
+public class MockGreeter extends Greeter {
+    public MockGreeter() {
+    }
+
+    public String greet() {
+        return "mock";
+    }
+}

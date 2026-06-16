@@ -1,0 +1,64 @@
+package org.cajeta.unit;
+
+import cajeta.collection.ArrayList;
+
+/**
+ * Records method invocations on a test double, so a test can verify what was
+ * called. The recording primitive behind hand-written mocks.
+ *
+ * Because Cajeta monomorphizes and has no dynamic proxies, mocks are written by
+ * hand: a mock class implements/subclasses the type under test, holds a
+ * `CallLog`, and calls `track("methodName")` in each method. The test then
+ * asserts against the log with {@Link Verify}.
+ *
+ * ```cajeta
+ * public class MockMailer extends Mailer {
+ *     public CallLog log = heap CallLog();
+ *     public void send(String to) { this.log.track("send"); }
+ * }
+ * // ... exercise ...
+ * Verify.received(mock.log, "send");
+ * ```
+ */
+public class CallLog {
+    ArrayList<String> calls;
+
+    public CallLog() {
+        this.calls = heap ArrayList<String>();
+    }
+
+    /** Record one invocation of `method`. */
+    public void track(String method) {
+        this.calls.add(method);
+    }
+
+    /** Total number of recorded invocations across all methods. */
+    public int32 total() {
+        return this.calls.count();
+    }
+
+    /** Number of recorded invocations of `method`. */
+    public int32 count(String method) {
+        int32 n = 0;
+        int32 i = 0;
+        int32 c = this.calls.count();
+        while (i < c) {
+            String m = this.calls.get(i);
+            if (m.equals(method)) {
+                n = n + 1;
+            }
+            i = i + 1;
+        }
+        return n;
+    }
+
+    /** Whether `method` was invoked at least once. */
+    public boolean received(String method) {
+        return this.count(method) > 0;
+    }
+
+    /** Forget all recorded invocations (reuse the log across cases). */
+    public void reset() {
+        this.calls = heap ArrayList<String>();
+    }
+}

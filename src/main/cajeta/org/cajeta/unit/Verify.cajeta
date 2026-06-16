@@ -1,0 +1,41 @@
+package org.cajeta.unit;
+
+/**
+ * Assertions over a {@Link CallLog} — the verification side of hand-written
+ * mocks. Each check throws an `AssertionFailure` (via `Assert.fail`) on
+ * mismatch, so verifications fail a test the same way assertions do.
+ *
+ * ```cajeta
+ * Verify.received(mock.log, "send");
+ * Verify.receivedTimes(mock.log, "retry", 3);
+ * Verify.neverReceived(mock.log, "delete");
+ * ```
+ *
+ * Static, log-borrowing methods (the log stays owned by the test). For fakes —
+ * hand-written working doubles with real behavior — no verification is needed;
+ * assert on their observable state with {@Link Assert} directly.
+ */
+public class Verify {
+
+    /** Fail unless `method` was recorded at least once. */
+    public static void received(CallLog log, String method) {
+        if (log.received(method) == false) {
+            Assert.fail("expected a call to '" + method + "', but none was recorded");
+        }
+    }
+
+    /** Fail unless `method` was recorded exactly `times` times. */
+    public static void receivedTimes(CallLog log, String method, int32 times) {
+        int32 actual = log.count(method);
+        if (actual != times) {
+            Assert.fail("call-count mismatch for '" + method + "'");
+        }
+    }
+
+    /** Fail if `method` was recorded at all. */
+    public static void neverReceived(CallLog log, String method) {
+        if (log.received(method)) {
+            Assert.fail("expected no call to '" + method + "', but one was recorded");
+        }
+    }
+}

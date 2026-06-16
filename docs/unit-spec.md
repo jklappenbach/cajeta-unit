@@ -5,7 +5,16 @@ declaration & lifecycle, AssertJ-style fluent assertions, pytest-style parameter
 and gomock/mockall-style **compile-time** mocking — fused with Cajeta's shipped
 `@Component` DI for production-overriding test contexts._
 
-Status: design spec (v0). Builds to a `.cja`. Plan: `plan/unit-plan.md`.
+Status: design spec (v0) — aspirational vision. Builds to a `.cja`. Plan: `plan/unit-plan.md`.
+
+> **What actually ships today is in [`test-doubles.md`](test-doubles.md).** This
+> spec predates the cazo split: the `@TestComponent` / `@Profile` component
+> framework moved to [cazo](https://github.com/jklappenbach/cajeta-cazo), and
+> cajeta-unit stays framework-neutral (only `@Inject`). The shipped mechanism is
+> a runtime `@Inject` override (`TestContext`) plus hand-written doubles
+> (`CallLog` / `Verify`) — **no** codegen `@Mock`, **no** `@Test` discovery yet.
+> Read `test-doubles.md` for the real, self-tested surface; treat the sections
+> below as the longer-term design.
 
 ---
 

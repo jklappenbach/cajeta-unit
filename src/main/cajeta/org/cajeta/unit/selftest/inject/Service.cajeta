@@ -1,0 +1,38 @@
+package org.cajeta.unit.selftest.inject;
+
+import org.cajeta.unit.TestContext;
+
+/**
+ * E2E proof of the @Inject runtime override. Service has an @Inject Greeter
+ * field; the test binds a MockGreeter for Greeter, then obtains the injected
+ * Service singleton and checks its Greeter is the mock.
+ *
+ * Requires a test build (`--profile=test`) for the override hook to be emitted.
+ */
+@Component
+public class Service {
+    @Inject Greeter g;
+
+    public Service() {
+    }
+
+    public static int32 run() {
+        // Bind the mock BEFORE the component graph is constructed.
+        MockGreeter mock = heap MockGreeter();
+        TestContext.bind(Greeter.class, mock);
+
+        // Obtain the injected Service singleton; @Inject Greeter must resolve
+        // to the bound mock, not the real provider.
+        Service s = __cajeta_inject();
+        String got = s.g.greet();
+
+        TestContext.clear();
+
+        if (got.equals("mock")) {
+            System.stdout.println("  @Inject override → resolved to mock (PASS)");
+            return 0;
+        }
+        System.stdout.println("  FAIL: @Inject override expected 'mock', got '" + got + "'");
+        return 1;
+    }
+}

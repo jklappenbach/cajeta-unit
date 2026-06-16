@@ -1,0 +1,12 @@
+package org.cajeta.unit.selftest.inject;
+
+/** The real provider: a @Component injected into Service. */
+@Component
+public class Greeter {
+    public Greeter() {
+    }
+
+    public String greet() {
+        return "real";
+    }
+}

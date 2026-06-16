@@ -3,6 +3,9 @@ package org.cajeta.unit.selftest;
 import org.cajeta.unit.Assert;
 import org.cajeta.unit.AssertionFailure;
 import org.cajeta.unit.TestRunner;
+import org.cajeta.unit.CallLog;
+import org.cajeta.unit.Verify;
+import org.cajeta.unit.selftest.inject.Service;
 
 /**
  * cajeta-unit's own test suite — the framework, tested with itself.
@@ -129,8 +132,37 @@ public class SelfTest {
             Assert.assertThrows(() -> { Assert.fail("expected"); });
         });
 
+        t.test("CallLog records and counts invocations", () -> {
+            CallLog log = heap CallLog();
+            log.track("a");
+            log.track("a");
+            log.track("b");
+            Assert.that(log.count("a")).isEqualTo(2);
+            Assert.that(log.total()).isEqualTo(3);
+            Assert.isTrue(log.received("b"));
+            Assert.isFalse(log.received("c"));
+        });
+        t.test("Verify received / receivedTimes / neverReceived", () -> {
+            CallLog log = heap CallLog();
+            log.track("save");
+            log.track("save");
+            Verify.received(log, "save");
+            Verify.receivedTimes(log, "save", 2);
+            Verify.neverReceived(log, "delete");
+        });
+
         t.skip("a deliberately skipped test", "demonstrates skip");
 
-        return t.summary();
+        int32 rc = t.summary();
+
+        // E2E: the @Inject runtime override (needs a --profile=test build).
+        System.stdout.println("");
+        System.stdout.println("== @Inject override (DI context substitution) ==");
+        int32 injectRc = Service.run();
+        if (injectRc != 0) {
+            rc = 1;
+        }
+
+        return rc;
     }
 }
