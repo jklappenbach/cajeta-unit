@@ -1,0 +1,53 @@
+package org.cajeta.unit;
+
+import cajeta.lang.Float64;
+
+/**
+ * Fluent assertions on a float: `assertThat(x).isCloseTo(y, 1e-9)`. Exact
+ * equality (`isEqualTo`) is offered but `isCloseTo` with a tolerance is the
+ * right tool for computed values.
+ */
+public final class Float64Subject {
+    float64 actual;
+
+    public Float64Subject(float64 actual) {
+        this.actual = actual;
+    }
+
+    #String show(float64 v) {
+        return Float64.of(v).toString();
+    }
+
+    public void isEqualTo(float64 expected) {
+        if (this.actual != expected) {
+            throw heap AssertionFailure(
+                #("expected <" + this.show(expected) + "> but was <" + this.show(this.actual) + ">"));
+        }
+    }
+
+    public void isCloseTo(float64 expected, float64 tolerance) {
+        float64 d = this.actual - expected;
+        if (d < 0.0) {
+            d = 0.0 - d;
+        }
+        if (d > tolerance) {
+            throw heap AssertionFailure(
+                #("expected <" + this.show(this.actual) + "> to be within <"
+                  + this.show(tolerance) + "> of <" + this.show(expected) + ">"));
+        }
+    }
+
+    public void isGreaterThan(float64 bound) {
+        if (this.actual <= bound) {
+            throw heap AssertionFailure(
+                #("expected <" + this.show(this.actual) + "> > <" + this.show(bound) + ">"));
+        }
+    }
+
+    public void isLessThan(float64 bound) {
+        if (this.actual >= bound) {
+            throw heap AssertionFailure(
+                #("expected <" + this.show(this.actual) + "> < <" + this.show(bound) + ">"));
+        }
+    }
+}

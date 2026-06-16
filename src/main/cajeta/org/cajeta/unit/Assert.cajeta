@@ -1,0 +1,92 @@
+package org.cajeta.unit;
+
+import cajeta.lang.String;
+
+/**
+ * The assertion facade — the one import a test needs. Two styles, both shipped:
+ *
+ * **Fluent (AssertJ-style), preferred — for numbers, strings, and floats:**
+ * ```cajeta
+ * Assert.that(order.total).isEqualTo(1999);
+ * Assert.that(name).startsWith("o_");
+ * Assert.that(ratio).isCloseTo(0.5, 1e-9);
+ * ```
+ *
+ * **Booleans use the classic form** (`that(boolean)` is intentionally absent: an
+ * integer literal like `that(1)` would mis-bind to it, so booleans are explicit):
+ * ```cajeta
+ * Assert.isTrue(order.isPaid());
+ * Assert.isFalse(cart.isEmpty());
+ * Assert.fail("unreachable");
+ * Assert.assertThrows(() -> service.charge(-1));
+ * ```
+ *
+ * Every failing check throws `AssertionFailure`; the `TestRunner` catches it,
+ * marks that test failed, and continues. Failures are fail-fast *within* a test
+ * (the first failed assertion ends that test) — `require`-style. (Soft,
+ * collect-all assertions are a planned addition; see `docs/unit-spec.md` §4.)
+ */
+public final class Assert {
+
+    // --- fluent entry points (assertThat) ---------------------------------
+
+    public static #Int64Subject that(int64 actual) {
+        return heap Int64Subject(actual);
+    }
+
+    public static #StringSubject that(String actual) {
+        return heap StringSubject(actual);
+    }
+
+    // Floats get a distinct name: an integer literal `that(2)` is ambiguous
+    // against a `that(float64)` overload and mis-binds, so `thatFloat` keeps the
+    // integer `that(...)` path unambiguous.
+    public static #Float64Subject thatFloat(float64 actual) {
+        return heap Float64Subject(actual);
+    }
+
+    // --- classic assertions ----------------------------------------------
+
+    public static void isTrue(boolean condition) {
+        if (!condition) {
+            throw heap AssertionFailure(#("expected condition to be true"));
+        }
+    }
+
+    public static void isFalse(boolean condition) {
+        if (condition) {
+            throw heap AssertionFailure(#("expected condition to be false"));
+        }
+    }
+
+    public static void equals(int64 expected, int64 actual) {
+        Assert.that(actual).isEqualTo(expected);
+    }
+
+    public static void equals(String expected, String actual) {
+        Assert.that(actual).isEqualTo(expected);
+    }
+
+    /** Unconditionally fail with `message`. */
+    public static void fail(String message) {
+        throw heap AssertionFailure(#("" + message));
+    }
+
+    /**
+     * Assert that running `body` throws (any exception). Fails if it returns
+     * normally. A type-filtered `assertThrows(Type.class, body)` is a planned
+     * addition once typed-catch matching is wired (`docs/unit-spec.md` §4).
+     */
+    public static void assertThrows(() -> void body) {
+        boolean threw = false;
+        try {
+            body();
+        } catch (Exception e) {
+            threw = true;
+        }
+        if (!threw) {
+            throw heap AssertionFailure(
+                #("expected an exception to be thrown, but none was"));
+        }
+    }
+}

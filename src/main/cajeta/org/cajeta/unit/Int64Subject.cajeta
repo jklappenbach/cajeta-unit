@@ -1,0 +1,78 @@
+package org.cajeta.unit;
+
+import cajeta.lang.Int64;
+
+/**
+ * Fluent assertions on an integer value: `assertThat(x).isEqualTo(y)`,
+ * AssertJ-style. Each terminal check throws `AssertionFailure` with a
+ * high-signal "expected <e> but was <a>" message when it does not hold.
+ */
+public final class Int64Subject {
+    int64 actual;
+
+    public Int64Subject(int64 actual) {
+        this.actual = actual;
+    }
+
+    #String show(int64 v) {
+        return Int64.of(v).toString();
+    }
+
+    void failExpected(String rel, int64 bound) {
+        String m = "expected <" + this.show(this.actual) + "> to be " + rel
+                 + " <" + this.show(bound) + ">";
+        throw heap AssertionFailure(#m);
+    }
+
+    public void isEqualTo(int64 expected) {
+        if (this.actual != expected) {
+            String m = "expected <" + this.show(expected) + "> but was <"
+                     + this.show(this.actual) + ">";
+            throw heap AssertionFailure(#m);
+        }
+    }
+
+    public void isNotEqualTo(int64 expected) {
+        if (this.actual == expected) {
+            String m = "expected a value != <" + this.show(expected)
+                     + "> but it was equal";
+            throw heap AssertionFailure(#m);
+        }
+    }
+
+    public void isGreaterThan(int64 bound) {
+        if (this.actual <= bound) {
+            this.failExpected(">", bound);
+        }
+    }
+
+    public void isLessThan(int64 bound) {
+        if (this.actual >= bound) {
+            this.failExpected("<", bound);
+        }
+    }
+
+    public void isGreaterThanOrEqualTo(int64 bound) {
+        if (this.actual < bound) {
+            this.failExpected(">=", bound);
+        }
+    }
+
+    public void isLessThanOrEqualTo(int64 bound) {
+        if (this.actual > bound) {
+            this.failExpected("<=", bound);
+        }
+    }
+
+    public void isZero() {
+        this.isEqualTo(0);
+    }
+
+    public void isPositive() {
+        this.isGreaterThan(0);
+    }
+
+    public void isNegative() {
+        this.isLessThan(0);
+    }
+}

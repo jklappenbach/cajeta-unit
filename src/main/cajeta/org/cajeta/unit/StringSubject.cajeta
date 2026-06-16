@@ -1,0 +1,72 @@
+package org.cajeta.unit;
+
+import cajeta.lang.String;
+import cajeta.lang.Int64;
+
+/**
+ * Fluent assertions on a string: `assertThat(s).isEqualTo("x").contains("y")`.
+ */
+public final class StringSubject {
+    String actual;
+
+    public StringSubject(String actual) {
+        this.actual = actual;
+    }
+
+    public void isEqualTo(String expected) {
+        if (!this.actual.equals(expected)) {
+            throw heap AssertionFailure(
+                #("expected <\"" + expected + "\"> but was <\"" + this.actual + "\">"));
+        }
+    }
+
+    public void isNotEqualTo(String other) {
+        if (this.actual.equals(other)) {
+            throw heap AssertionFailure(
+                #("expected a string != <\"" + other + "\"> but it was equal"));
+        }
+    }
+
+    public void contains(String needle) {
+        if (!this.actual.contains(needle)) {
+            throw heap AssertionFailure(
+                #("expected <\"" + this.actual + "\"> to contain <\"" + needle + "\">"));
+        }
+    }
+
+    public void startsWith(String prefix) {
+        if (!this.actual.startsWith(prefix)) {
+            throw heap AssertionFailure(
+                #("expected <\"" + this.actual + "\"> to start with <\"" + prefix + "\">"));
+        }
+    }
+
+    public void endsWith(String suffix) {
+        if (!this.actual.endsWith(suffix)) {
+            throw heap AssertionFailure(
+                #("expected <\"" + this.actual + "\"> to end with <\"" + suffix + "\">"));
+        }
+    }
+
+    public void isEmpty() {
+        if (!this.actual.isEmpty()) {
+            throw heap AssertionFailure(
+                #("expected an empty string but was <\"" + this.actual + "\">"));
+        }
+    }
+
+    public void isNotEmpty() {
+        if (this.actual.isEmpty()) {
+            throw heap AssertionFailure(#("expected a non-empty string but it was empty"));
+        }
+    }
+
+    public void hasLength(int64 expected) {
+        int64 n = this.actual.count();
+        if (n != expected) {
+            throw heap AssertionFailure(
+                #("expected length <" + Int64.of(expected).toString()
+                  + "> but was <" + Int64.of(n).toString() + ">"));
+        }
+    }
+}

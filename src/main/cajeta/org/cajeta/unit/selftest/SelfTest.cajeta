@@ -1,0 +1,136 @@
+package org.cajeta.unit.selftest;
+
+import org.cajeta.unit.Assert;
+import org.cajeta.unit.AssertionFailure;
+import org.cajeta.unit.TestRunner;
+
+/**
+ * cajeta-unit's own test suite — the framework, tested with itself.
+ *
+ * A test framework has a bootstrap problem: you can't trust it to test itself
+ * until you've proven, from first principles, that its assertion engine detects
+ * BOTH a passing check (does not throw) AND a failing check (does throw). A
+ * broken `isEqualTo` that always "passes" would make every self-test green and
+ * hide the bug. So `bootstrap()` verifies both paths with raw try/catch — no
+ * `TestRunner` — and only then do we use the (now-trusted) engine to test the
+ * rest of the framework.
+ *
+ * Entry: `org.cajeta.unit.selftest.SelfTest.run` (returns 0 = all green).
+ */
+public class SelfTest {
+
+    /** Prove the engine's pass AND fail paths from first principles. */
+    static int32 bootstrap() {
+        int32 problems = 0;
+
+        // (1) a passing check must NOT throw
+        boolean threwOnPass = false;
+        try {
+            Assert.that(2).isEqualTo(2);
+        } catch (Exception e) {
+            threwOnPass = true;
+        }
+        if (threwOnPass) {
+            System.stdout.println("  BOOTSTRAP FAIL: a passing check threw");
+            problems = problems + 1;
+        }
+
+        // (2) a failing check MUST throw
+        boolean threwOnFail = false;
+        try {
+            Assert.that(2).isEqualTo(3);
+        } catch (Exception e) {
+            threwOnFail = true;
+        }
+        if (!threwOnFail) {
+            System.stdout.println("  BOOTSTRAP FAIL: a failing check did NOT throw");
+            problems = problems + 1;
+        }
+
+        // (3) fail() must throw
+        boolean failThrew = false;
+        try {
+            Assert.fail("deliberate");
+        } catch (Exception e) {
+            failThrew = true;
+        }
+        if (!failThrew) {
+            System.stdout.println("  BOOTSTRAP FAIL: fail() did not throw");
+            problems = problems + 1;
+        }
+
+        // (4) assertThrows passes when the body throws, fails when it doesn't
+        boolean sawThrowingBody = false;
+        try {
+            Assert.assertThrows(() -> { Assert.fail("boom"); });
+            sawThrowingBody = true;
+        } catch (Exception e) {
+        }
+        if (!sawThrowingBody) {
+            System.stdout.println("  BOOTSTRAP FAIL: assertThrows rejected a throwing body");
+            problems = problems + 1;
+        }
+
+        boolean rejectedNonThrowing = false;
+        try {
+            Assert.assertThrows(() -> { });
+        } catch (Exception e) {
+            rejectedNonThrowing = true;
+        }
+        if (!rejectedNonThrowing) {
+            System.stdout.println("  BOOTSTRAP FAIL: assertThrows accepted a non-throwing body");
+            problems = problems + 1;
+        }
+
+        return problems;
+    }
+
+    public static int32 run() {
+        System.stdout.println("== cajeta-unit bootstrap (verify the engine's pass AND fail paths) ==");
+        int32 boot = SelfTest.bootstrap();
+        if (boot > 0) {
+            System.stdout.println("BOOTSTRAP BROKEN — the assertion engine is untrustworthy. Aborting.");
+            return 1;
+        }
+        System.stdout.println("  bootstrap OK — engine verified");
+        System.stdout.println("");
+
+        System.stdout.println("== cajeta-unit self-tests (the framework, tested with itself) ==");
+        TestRunner t = heap TestRunner();
+
+        t.test("int isEqualTo passes on equal", () -> {
+            Assert.that(4).isEqualTo(4);
+        });
+        t.test("int isNotEqualTo", () -> {
+            Assert.that(4).isNotEqualTo(5);
+        });
+        t.test("int comparisons", () -> {
+            Assert.that(5).isGreaterThan(3);
+            Assert.that(2).isLessThan(10);
+        });
+        t.test("string isEqualTo", () -> {
+            Assert.that("ab").isEqualTo("ab");
+        });
+        t.test("string contains and startsWith", () -> {
+            Assert.that("hello").contains("ell");
+            Assert.that("hello").startsWith("he");
+        });
+        t.test("string hasLength", () -> {
+            Assert.that("abc").hasLength(3);
+        });
+        t.test("bool isTrue and isFalse", () -> {
+            Assert.isTrue(1 > 0);
+            Assert.isFalse(1 > 2);
+        });
+        t.test("float isCloseTo within tolerance", () -> {
+            Assert.thatFloat(3.14159).isCloseTo(3.14, 0.01);
+        });
+        t.test("assertThrows catches a throwing body", () -> {
+            Assert.assertThrows(() -> { Assert.fail("expected"); });
+        });
+
+        t.skip("a deliberately skipped test", "demonstrates skip");
+
+        return t.summary();
+    }
+}
