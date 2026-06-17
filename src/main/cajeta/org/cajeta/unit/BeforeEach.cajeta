@@ -1,0 +1,8 @@
+package org.cajeta.unit;
+
+/**
+ * Marks a method to run before every `@Test` in the same class, on the same
+ * fresh per-test instance — fixture setup. Multiple `@BeforeEach` methods all
+ * run (order unspecified in v1). A throw here fails the test.
+ */
+public annotation BeforeEach { }

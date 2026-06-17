@@ -57,6 +57,23 @@ public final class TestRunner {
         }
     }
 
+    /**
+     * Record a passing test by name. Lower-level entry used by the reflective
+     * `Runner` (which invokes the body itself); `test(...)` calls it internally.
+     */
+    public void recordPass(String name) {
+        this.passed = this.passed + 1;
+        System.stdout.println("  ✓ PASS  " + name);
+    }
+
+    /** Record a failing test by name + failure message (used by `Runner`). */
+    public void recordFail(String name, String message) {
+        this.failed = this.failed + 1;
+        String line = "  ✗ FAIL  " + name + "  ::  " + message;
+        System.stdout.println(line);
+        this.failureLines.add(#line);
+    }
+
     /** Skip a test, noting why. Counts as skipped, never fails the run. */
     public void skip(String name, String reason) {
         this.skipped = this.skipped + 1;

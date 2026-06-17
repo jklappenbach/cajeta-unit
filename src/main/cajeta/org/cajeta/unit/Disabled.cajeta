@@ -1,0 +1,8 @@
+package org.cajeta.unit;
+
+/**
+ * Marks a `@Test` method as disabled: the `Runner` reports it as skipped and
+ * never executes its body. Use for a temporarily-broken or flaky test instead
+ * of deleting it. (A reason string element is a planned addition.)
+ */
+public annotation Disabled { }

@@ -1,0 +1,57 @@
+package org.cajeta.unit.selftest.discovery;
+
+import org.cajeta.unit.Assert;
+
+/**
+ * A sample test class run by the reflective `Runner` — the self-test of `@Test`
+ * discovery. Proves: `@Test` methods are found and invoked; `@BeforeEach` runs
+ * on a fresh per-test instance (so mutations don't leak between tests);
+ * `@Disabled` is skipped, not run.
+ *
+ * The annotations canonicalize to package `code` in the compiler, so they are
+ * applied bare (`@Test`) without an import — matching how `Runner` discovers
+ * them by their `code.*` names.
+ */
+public class ExampleTest {
+    int32 counter;
+
+    public ExampleTest() {
+        this.counter = 0;
+        return;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        this.counter = 10;
+        return;
+    }
+
+    @Test
+    public void beforeEachRanOnFreshInstance() {
+        Assert.that(this.counter).isEqualTo(10);
+        return;
+    }
+
+    @Test
+    public void mutationDoesNotLeakAcrossTests() {
+        // A fresh instance per test → @BeforeEach reset counter to 10 regardless
+        // of any other test mutating its own instance.
+        this.counter = this.counter + 5;
+        Assert.that(this.counter).isEqualTo(15);
+        return;
+    }
+
+    @Test
+    public void assertionsWork() {
+        Assert.that("cajeta").startsWith("caj");
+        Assert.isTrue(2 + 2 == 4);
+        return;
+    }
+
+    @Test
+    @Disabled
+    public void notYetImplemented() {
+        Assert.fail("a @Disabled test must never run");
+        return;
+    }
+}

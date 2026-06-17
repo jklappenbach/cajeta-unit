@@ -29,13 +29,26 @@ _Execution plan for `docs/unit-spec.md`. Library project (`.cja`), scaffolded fr
 > the runner uses one `catch (Exception)`; numeric-literal overloads mis-bind → `thatFloat`
 > and `isTrue/isFalse` are named apart from `that(int64)`.
 
-### Phase 2 — discovery & runner (resolve the annotation question first)
-- [ ] **Decide annotation strategy** (spec §9): reflective `@Test` discovery vs
-      compiler-recognized vs aspect+registration. Spike each; pick.
-- [ ] `@Test` discovery + `Runner`: lifecycle order (`@BeforeAll/@BeforeEach/...`),
-      `@Disabled`, `@Tag` filtering, timing.
-- [ ] Console reporter; then JUnit-XML + TAP.
-- [ ] Wire to the build tool `test` action + `cajeta.coverage`.
+### Phase 2 — discovery & runner — **basic discovery DONE (v0.3)**
+- [x] **Decided annotation strategy** (spec §9): **reflective `@Test` discovery**
+      (`Class.allClasses()` → method `hasAnnotation("code.Test")` → `heapInstance(0)`
+      + `Method.invokeObject`). No compiler work needed — the reflection foundation
+      already covered it. Compiler-recognized registry left as a future optimization.
+- [x] `@Test` discovery + `Runner.runAll()`: marker annotations `@Test`, `@BeforeEach`,
+      `@AfterEach`, `@Disabled`; fresh instance per test (isolation); `@AfterEach`
+      runs even on failure; static `@Test` supported. Self-hosted via `selftest/
+      discovery/ExampleTest` (3 pass + 1 `@Disabled` skip), driven from `SelfTest.run`.
+- [x] Console reporter (reuses `TestRunner` counting/`summary()` → exit code).
+- [x] Wired to the build tool `test` action (the existing `entry-method` runner exe
+      already calls `Runner.runAll()`).
+- [ ] **Deferred to a later phase:** `@BeforeAll`/`@AfterAll` (static once-per-class),
+      `@Tag` filtering, per-test timing, `@Disabled("reason")` element value, JUnit-XML
+      + TAP reporters, `cajeta.coverage`.
+
+> **Gotcha hit (workaround in `Runner`):** an UNQUALIFIED same-class `static final
+> String` read currently miscompiles to an empty string, so the annotation-name
+> constants are referenced qualified (`Runner.TEST`, not `TEST`). Compiler bug to fix
+> upstream in cajeta-two.
 
 ### Phase 3 — `@Component` test contexts
 - [ ] `TestContext`: select profile (`unit`/`integration`/`test`), activate via

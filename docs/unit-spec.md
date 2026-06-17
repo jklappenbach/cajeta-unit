@@ -285,6 +285,16 @@ The runner is built on `allClasses` → methods annotated `@Test` → `invokeObj
 `Annotation.getArg*`. A compiler-recognized test registry (emitting discovery, like
 `@Component`) remains a *future optimization* over the startup scan, not a prerequisite.
 
+**IMPLEMENTED (v0.3) — `Runner` + marker annotations.** `Runner.runAll()` enumerates
+`Class.allClasses()`, matches `Method.hasAnnotation("code.Test")` (a bare `@Test`
+canonicalizes to package `code`), builds a fresh per-test instance via
+`Class.heapInstance(0)`, runs `@BeforeEach` → body → `@AfterEach` (teardown runs even on
+failure), and skips `@Disabled`. Static `@Test` methods invoke with no instance. Self-
+hosted by `selftest/discovery/ExampleTest`. See `docs/discovery.md`. Deferred: `@BeforeAll`/
+`@AfterAll`, `@Tag` filtering, timing, `@Disabled("reason")`, JUnit-XML/TAP. (Workaround:
+the annotation-name constants are read **qualified** — an unqualified same-class `static
+final String` read currently miscompiles to empty in cajeta-two.)
+
 **Still genuinely new:** `@Mock` codegen (§5) needs an annotation-processing/codegen hook —
 that is the one remaining language dependency (hand-written `@TestComponent` fakes bridge it
 meanwhile). See `../../cajeta/plans/DI-request-scope-and-test-enablers.md`.

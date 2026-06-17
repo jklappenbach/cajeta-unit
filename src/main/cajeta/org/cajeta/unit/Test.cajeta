@@ -1,0 +1,22 @@
+package org.cajeta.unit;
+
+/**
+ * Marks a method as a unit test. The `Runner` discovers every `@Test` method
+ * across the binary's classes (via `Class.allClasses()` reflection), constructs
+ * a fresh instance of the declaring class per method, runs `@BeforeEach` /
+ * `@AfterEach` lifecycle around it, and reports pass/fail.
+ *
+ * ```cajeta
+ * class CalculatorTest {
+ *     @Test void addsTwoNumbers() { Assert.that(2 + 2).isEqualTo(4); }
+ * }
+ * ```
+ *
+ * A test class needs a public no-arg constructor (used to build the per-test
+ * instance). A static `@Test` method is invoked without an instance. A thrown
+ * `AssertionFailure` — or any other throw — fails the test.
+ *
+ * Discovery matches the compiler's canonical annotation name `code.Test` (a bare
+ * `@Test` use canonicalizes to package `code`); the constant lives in `Runner`.
+ */
+public annotation Test { }

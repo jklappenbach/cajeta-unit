@@ -1,0 +1,8 @@
+package org.cajeta.unit;
+
+/**
+ * Marks a method to run after every `@Test` in the same class — fixture
+ * teardown. Runs even when the test (or a `@BeforeEach`) failed, so cleanup is
+ * reliable. A throw in teardown fails an otherwise-passing test.
+ */
+public annotation AfterEach { }

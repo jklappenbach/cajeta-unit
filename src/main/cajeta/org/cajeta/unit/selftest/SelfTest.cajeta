@@ -3,6 +3,7 @@ package org.cajeta.unit.selftest;
 import org.cajeta.unit.Assert;
 import org.cajeta.unit.AssertionFailure;
 import org.cajeta.unit.TestRunner;
+import org.cajeta.unit.Runner;
 import org.cajeta.unit.CallLog;
 import org.cajeta.unit.Verify;
 import org.cajeta.unit.selftest.inject.Service;
@@ -160,6 +161,16 @@ public class SelfTest {
         System.stdout.println("== @Inject override (DI context substitution) ==");
         int32 injectRc = Service.run();
         if (injectRc != 0) {
+            rc = 1;
+        }
+
+        // Annotation-driven @Test discovery — the reflective Runner finds and
+        // runs @Test methods (with @BeforeEach/@AfterEach/@Disabled) across the
+        // binary; ExampleTest is the fixture it discovers.
+        System.stdout.println("");
+        System.stdout.println("== @Test discovery (annotation-driven Runner) ==");
+        int32 discoveredRc = Runner.runAll();
+        if (discoveredRc != 0) {
             rc = 1;
         }
 

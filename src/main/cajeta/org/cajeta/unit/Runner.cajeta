@@ -1,0 +1,133 @@
+package org.cajeta.unit;
+
+import cajeta.reflect.Class;
+import cajeta.reflect.Method;
+import cajeta.lang.String;
+
+/**
+ * Annotation-driven test discovery. `runAll()` enumerates every class in the
+ * binary (`Class.allClasses()`), and for each one runs its `@Test` methods with
+ * `@BeforeEach` / `@AfterEach` lifecycle and `@Disabled` skipping. Classes with
+ * no `@Test` method contribute nothing.
+ *
+ * ```cajeta
+ * public static int32 run() { return Runner.runAll(); }
+ * ```
+ *
+ * Returns the process exit code (0 = all green, 1 = any failure) so the build
+ * tool's `test` action turns it into a build pass/fail. This is the reflective
+ * discovery path; explicit `TestRunner.test(name, () -> ...)` registration
+ * remains available for code that prefers it.
+ *
+ * Per test method: a fresh instance of the declaring class is built via its
+ * public no-arg constructor (`Class.heapInstance(0)`); `@BeforeEach` runs, then
+ * the test body, then `@AfterEach` (even on failure, for reliable teardown). A
+ * static `@Test` is invoked with no instance and no lifecycle.
+ *
+ * Annotation names: a bare `@Test` use canonicalizes to package `code` in the
+ * compiler, so discovery matches `code.Test`, not `org.cajeta.unit.Test`.
+ */
+public final class Runner {
+
+    // Reference these qualified (`Runner.TEST`): an UNQUALIFIED same-class static
+    // field read currently miscompiles to an empty string, so a bare `TEST` would
+    // make every hasAnnotation() match nothing.
+    static final String TEST        = "code.Test";
+    static final String BEFORE_EACH = "code.BeforeEach";
+    static final String AFTER_EACH  = "code.AfterEach";
+    static final String DISABLED    = "code.Disabled";
+
+    /** Discover and run every `@Test` method in the binary; report + exit code. */
+    public static int32 runAll() {
+        TestRunner runner = heap TestRunner();
+        Class<?>[] all = Class.allClasses();
+        int32 n = (int32) all.count();
+        int32 i = 0;
+        while (i < n) {
+            Class<?> c = all[i];
+            i = i + 1;
+            runClass(runner, c);
+        }
+        return runner.summary();
+    }
+
+    /** Run every `@Test` method declared on `c` (no-op if it has none). */
+    static void runClass(TestRunner runner, Class<?> c) {
+        int32 mc = c.getMethodCount();
+        int32 mi = 0;
+        while (mi < mc) {
+            Method t = c.getMethod(mi);
+            int32 idx = mi;
+            mi = mi + 1;
+            if (!t.hasAnnotation(Runner.TEST)) {
+                continue;
+            }
+            // getName() is already the qualified `Class::method(params)` form.
+            String name = t.getName();
+            if (t.hasAnnotation(Runner.DISABLED)) {
+                runner.skip(name, "@Disabled");
+                continue;
+            }
+            runOne(runner, c, idx, name);
+        }
+    }
+
+    /** Run one `@Test` (by method index) with lifecycle; record the outcome. */
+    static void runOne(TestRunner runner, Class<?> c, int32 testIndex, String name) {
+        Method t = c.getMethod(testIndex);
+        if (t.getModifiers().isStatic()) {
+            boolean sok = true;
+            String smsg = "";
+            try {
+                t.invokeObject(null);
+            } catch (Exception e) {
+                sok = false;
+                smsg = e.message;
+            }
+            recordResult(runner, name, sok, smsg);
+            return;
+        }
+        // Instance test: fresh instance, @BeforeEach, body, then @AfterEach
+        // (always — reliable teardown). A throw anywhere fails the test.
+        boolean ok = true;
+        String msg = "";
+        Object inst = c.heapInstance(0);
+        try {
+            invokeLifecycle(c, inst, Runner.BEFORE_EACH);
+            t.invokeObject(inst);
+        } catch (Exception e) {
+            ok = false;
+            msg = e.message;
+        }
+        try {
+            invokeLifecycle(c, inst, Runner.AFTER_EACH);
+        } catch (Exception e) {
+            if (ok) {
+                ok = false;
+                msg = e.message;
+            }
+        }
+        recordResult(runner, name, ok, msg);
+    }
+
+    /** Invoke every method on `c` bearing `annotationName`, on `inst`. */
+    static void invokeLifecycle(Class<?> c, Object inst, String annotationName) {
+        int32 mc = c.getMethodCount();
+        int32 i = 0;
+        while (i < mc) {
+            Method m = c.getMethod(i);
+            if (m.hasAnnotation(annotationName)) {
+                m.invokeObject(inst);
+            }
+            i = i + 1;
+        }
+    }
+
+    static void recordResult(TestRunner runner, String name, boolean ok, String msg) {
+        if (ok) {
+            runner.recordPass(name);
+        } else {
+            runner.recordFail(name, msg);
+        }
+    }
+}
