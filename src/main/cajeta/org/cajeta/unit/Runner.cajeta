@@ -29,9 +29,6 @@ import cajeta.lang.String;
  */
 public final class Runner {
 
-    // Reference these qualified (`Runner.TEST`): an UNQUALIFIED same-class static
-    // field read currently miscompiles to an empty string, so a bare `TEST` would
-    // make every hasAnnotation() match nothing.
     static final String TEST        = "code.Test";
     static final String BEFORE_EACH = "code.BeforeEach";
     static final String AFTER_EACH  = "code.AfterEach";
@@ -59,12 +56,12 @@ public final class Runner {
             Method t = c.getMethod(mi);
             int32 idx = mi;
             mi = mi + 1;
-            if (!t.hasAnnotation(Runner.TEST)) {
+            if (!t.hasAnnotation(TEST)) {
                 continue;
             }
             // getName() is already the qualified `Class::method(params)` form.
             String name = t.getName();
-            if (t.hasAnnotation(Runner.DISABLED)) {
+            if (t.hasAnnotation(DISABLED)) {
                 runner.skip(name, "@Disabled");
                 continue;
             }
@@ -93,14 +90,14 @@ public final class Runner {
         String msg = "";
         Object inst = c.heapInstance(0);
         try {
-            invokeLifecycle(c, inst, Runner.BEFORE_EACH);
+            invokeLifecycle(c, inst, BEFORE_EACH);
             t.invokeObject(inst);
         } catch (Exception e) {
             ok = false;
             msg = e.message;
         }
         try {
-            invokeLifecycle(c, inst, Runner.AFTER_EACH);
+            invokeLifecycle(c, inst, AFTER_EACH);
         } catch (Exception e) {
             if (ok) {
                 ok = false;
