@@ -9,7 +9,7 @@ binary and runs them.
 ```cajeta
 package myapp;
 
-import org.cajeta.unit.Assert;
+import dev.cajeta.unit.Assert;
 
 public class CalculatorTest {
     Calculator calc;
@@ -49,7 +49,7 @@ matches them.
 ## Running
 
 ```cajeta
-import org.cajeta.unit.Runner;
+import dev.cajeta.unit.Runner;
 
 public final class TestMain {
     public static int32 run() {

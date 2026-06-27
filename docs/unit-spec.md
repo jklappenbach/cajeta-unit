@@ -68,7 +68,7 @@ We surveyed the leading frameworks and pick the best idea per dimension.
 ## 3. Architecture
 
 ```
-                       org.cajeta.unit
+                       dev.cajeta.unit
   ┌──────────────────────────────────────────────────────────────┐
   │ Discovery   find @Test methods (annotation-driven; see §9)      │
   │ Runner      lifecycle order, isolation, parallelism, reporting  │

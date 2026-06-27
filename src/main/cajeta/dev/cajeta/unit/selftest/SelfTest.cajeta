@@ -1,12 +1,12 @@
-package org.cajeta.unit.selftest;
+package dev.cajeta.unit.selftest;
 
-import org.cajeta.unit.Assert;
-import org.cajeta.unit.AssertionFailure;
-import org.cajeta.unit.TestRunner;
-import org.cajeta.unit.Runner;
-import org.cajeta.unit.CallLog;
-import org.cajeta.unit.Verify;
-import org.cajeta.unit.selftest.inject.Service;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.AssertionFailure;
+import dev.cajeta.unit.TestRunner;
+import dev.cajeta.unit.Runner;
+import dev.cajeta.unit.CallLog;
+import dev.cajeta.unit.Verify;
+import dev.cajeta.unit.selftest.inject.Service;
 
 /**
  * cajeta-unit's own test suite — the framework, tested with itself.
@@ -19,7 +19,7 @@ import org.cajeta.unit.selftest.inject.Service;
  * `TestRunner` — and only then do we use the (now-trusted) engine to test the
  * rest of the framework.
  *
- * Entry: `org.cajeta.unit.selftest.SelfTest.run` (returns 0 = all green).
+ * Entry: `dev.cajeta.unit.selftest.SelfTest.run` (returns 0 = all green).
  */
 public class SelfTest {
 

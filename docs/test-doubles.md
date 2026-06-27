@@ -15,7 +15,7 @@ runtime override check at each `@Inject` site, and `TestContext` is the front
 door to it:
 
 ```cajeta
-import org.cajeta.unit.TestContext;
+import dev.cajeta.unit.TestContext;
 
 MockClock clock = heap MockClock();      // a hand-written double
 TestContext.bind(Clock.class, clock);    // every @Inject Clock now resolves to clock

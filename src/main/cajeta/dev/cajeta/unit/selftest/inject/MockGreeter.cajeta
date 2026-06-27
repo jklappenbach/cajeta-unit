@@ -1,4 +1,4 @@
-package org.cajeta.unit.selftest.inject;
+package dev.cajeta.unit.selftest.inject;
 
 /**
  * A hand-written test double: subclasses the real component and overrides its

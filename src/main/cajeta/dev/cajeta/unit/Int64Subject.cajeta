@@ -1,4 +1,4 @@
-package org.cajeta.unit;
+package dev.cajeta.unit;
 
 import cajeta.lang.Int64;
 

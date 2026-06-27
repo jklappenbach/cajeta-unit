@@ -1,4 +1,4 @@
-package org.cajeta.unit.selftest.inject;
+package dev.cajeta.unit.selftest.inject;
 
 /** The real provider: a @Component injected into Service. */
 @Component

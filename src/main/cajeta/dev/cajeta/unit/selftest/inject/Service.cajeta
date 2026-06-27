@@ -1,6 +1,6 @@
-package org.cajeta.unit.selftest.inject;
+package dev.cajeta.unit.selftest.inject;
 
-import org.cajeta.unit.TestContext;
+import dev.cajeta.unit.TestContext;
 
 /**
  * E2E proof of the @Inject runtime override. Service has an @Inject Greeter

@@ -6,7 +6,7 @@ _Execution plan for `docs/unit-spec.md`. Library project (`.cja`), scaffolded fr
 ## Phasing
 
 ### Phase 0 — skeleton (done)
-- [x] `cajeta init library` scaffold; builds to `org.cajeta.unit-*.cja`.
+- [x] `cajeta init library` scaffold; builds to `dev.cajeta.unit-*.cja`.
 - [x] Spec with best-of-breed comparison (`docs/unit-spec.md`).
 
 ### Phase 1 — assertions + runner + build integration (no annotation dependency) — **DONE (v0.1.0)**
@@ -19,7 +19,7 @@ _Execution plan for `docs/unit-spec.md`. Library project (`.cja`), scaffolded fr
       `summary()` → exit code; console report.
 - [x] **Build integration**: `cajeta test` builds a runner exe (`entry-method`) + runs it;
       a failure fails the build; `cajeta build` skips tests. (`cajeta.json` `test` task.)
-- [x] Self-host: `org.cajeta.unit.selftest` — a bootstrap proves the engine's pass AND
+- [x] Self-host: `dev.cajeta.unit.selftest` — a bootstrap proves the engine's pass AND
       fail paths before the engine tests the rest. 9 green + 1 skip.
 
 > **v1 deviations forced by the toolchain (2026-06-16), tracked for Phase 2:**

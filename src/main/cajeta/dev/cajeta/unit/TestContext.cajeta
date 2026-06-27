@@ -1,4 +1,4 @@
-package org.cajeta.unit;
+package dev.cajeta.unit;
 
 /**
  * Overrides what `@Inject` resolves to, for tests.

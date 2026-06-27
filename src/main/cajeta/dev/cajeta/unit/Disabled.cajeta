@@ -1,4 +1,4 @@
-package org.cajeta.unit;
+package dev.cajeta.unit;
 
 /**
  * Marks a `@Test` method as disabled: the `Runner` reports it as skipped and

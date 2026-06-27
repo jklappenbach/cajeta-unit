@@ -1,4 +1,4 @@
-package org.cajeta.unit;
+package dev.cajeta.unit;
 
 /**
  * Assertions over a {@Link CallLog} — the verification side of hand-written

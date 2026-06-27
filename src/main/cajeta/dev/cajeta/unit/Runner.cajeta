@@ -1,4 +1,4 @@
-package org.cajeta.unit;
+package dev.cajeta.unit;
 
 import cajeta.reflect.Class;
 import cajeta.reflect.Method;
@@ -25,7 +25,7 @@ import cajeta.lang.String;
  * static `@Test` is invoked with no instance and no lifecycle.
  *
  * Annotation names: a bare `@Test` use canonicalizes to package `code` in the
- * compiler, so discovery matches `code.Test`, not `org.cajeta.unit.Test`.
+ * compiler, so discovery matches `code.Test`, not `dev.cajeta.unit.Test`.
  */
 public final class Runner {
 

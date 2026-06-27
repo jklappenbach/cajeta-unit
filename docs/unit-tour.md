@@ -12,8 +12,8 @@ test.
 ```cajeta
 package shop.tests;
 
-import org.cajeta.unit.Assert;
-import org.cajeta.unit.TestRunner;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.TestRunner;
 
 public class CartTests {
     public static int32 run() {
@@ -107,7 +107,7 @@ $ cajeta build    # builds your library only — tests are skipped
 A test framework can't be trusted to test itself until you've proven its engine
 detects **both** a passing check (doesn't throw) **and** a failing check (does
 throw) — otherwise a broken `isEqualTo` that always "passes" would make every
-self-test green. cajeta-unit's `org.cajeta.unit.selftest.SelfTest` does exactly
+self-test green. cajeta-unit's `dev.cajeta.unit.selftest.SelfTest` does exactly
 this: a `bootstrap()` verifies both paths with raw try/catch (no runner), and
 only then uses the now-trusted engine to test the rest. It's worth reading as the
 reference for the negative-test discipline.

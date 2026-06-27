@@ -1,6 +1,6 @@
-package org.cajeta.unit.selftest.discovery;
+package dev.cajeta.unit.selftest.discovery;
 
-import org.cajeta.unit.Assert;
+import dev.cajeta.unit.Assert;
 
 /**
  * A sample test class run by the reflective `Runner` — the self-test of `@Test`

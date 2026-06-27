@@ -5,8 +5,8 @@ fluent assertions, a self-reporting runner, and build-tool integration so tests
 run as part of the build and a failure fails the build.
 
 ```cajeta
-import org.cajeta.unit.Assert;
-import org.cajeta.unit.TestRunner;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.TestRunner;
 
 public class MathTests {
     public static int32 run() {
@@ -90,7 +90,7 @@ fails the build:
 **v0.1.0 — Phase 1 (assertions + runner + build integration), self-hosted.**
 cajeta-unit tests itself: a bootstrap proves the assertion engine detects both
 passing *and* failing checks before the engine is used to test the rest of the
-framework (see `org.cajeta.unit.selftest`).
+framework (see `dev.cajeta.unit.selftest`).
 
 Roadmap (see the plan): annotation-driven `@Test` discovery, `@Component`/
 `@TestComponent` test contexts, and compile-time **mocks/fakes/spies/stubs**.
