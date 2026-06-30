@@ -1,0 +1,62 @@
+package dev.cajeta.unit;
+
+/**
+ * Ordered interaction verification — the AoT analogue of Mockito's `InOrder`.
+ * Verifies that calls happened in a given sequence, not merely that they
+ * happened.
+ *
+ * ```cajeta
+ * InOrder order = heap InOrder();
+ * order.verify(file.engine, "open");
+ * order.verify(file.engine, "write");
+ * order.verify(file.engine, "close");   // fails if close was recorded before write
+ * ```
+ *
+ * Each `verify` scans forward from a monotonic cursor for the next matching call
+ * and advances past it; a later `verify` whose call appears *before* the cursor
+ * fails. The cursor indexes one engine's recorded calls, so ordering is verified
+ * **per engine** (cross-mock ordering is a later addition). The engine is passed
+ * to each call rather than stored — keeping the only state a plain integer cursor,
+ * which is reliable where a stored borrowed engine would not be.
+ */
+public class InOrder {
+    int32 cursor;
+
+    public InOrder() {
+        this.cursor = 0;
+    }
+
+    /** Fail unless the next recorded call (at/after the cursor) is to `method`. */
+    public void verify(MockEngine engine, String method) {
+        int32 c = engine.totalCalls();
+        int32 i = this.cursor;
+        while (i < c) {
+            if (engine.invocationAt(i).method().equals(method)) {
+                this.cursor = i + 1;
+                return;
+            }
+            i = i + 1;
+        }
+        Assert.fail("expected an in-order call to '" + method
+            + "' after call index " + this.cursor + " but none was found");
+    }
+
+    /**
+     * Fail unless the next recorded call (at/after the cursor) is to `method`
+     * with arguments satisfying `matchers` (owned).
+     */
+    public void verifyWith(MockEngine engine, String method, #Matcher[] matchers) {
+        int32 c = engine.totalCalls();
+        int32 i = this.cursor;
+        while (i < c) {
+            Invocation inv = engine.invocationAt(i);
+            if (MockEngine.matchesArgs(method, true, matchers, inv)) {
+                this.cursor = i + 1;
+                return;
+            }
+            i = i + 1;
+        }
+        Assert.fail("expected an in-order matching call to '" + method
+            + "' after call index " + this.cursor + " but none was found");
+    }
+}

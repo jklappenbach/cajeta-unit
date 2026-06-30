@@ -11,6 +11,7 @@ import dev.cajeta.unit.MockEngine;
 import dev.cajeta.unit.Invocation;
 import dev.cajeta.unit.Mock;
 import dev.cajeta.unit.MockVerify;
+import dev.cajeta.unit.InOrder;
 import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.selftest.inject.Service;
 import dev.cajeta.unit.selftest.doubles.Coin;
@@ -295,6 +296,31 @@ public class SelfTest {
             Assert.that((String) eng.argOf("send", 1, 1)).isEqualTo("y");
             Assert.that(((Int64) eng.lastArgOf("send", 0)).value()).isEqualTo(20);
             Assert.isTrue(eng.argOf("send", 9, 0) == null);
+        });
+
+        t.test("in-order verification: calls must appear in sequence", () -> {
+            MockEngine eng = heap MockEngine();
+            Object[] e0 = { };
+            eng.recordCall("open", #e0);
+            Object[] e1 = { };
+            eng.recordCall("write", #e1);
+            Object[] e2 = { };
+            eng.recordCall("write", #e2);
+            Object[] e3 = { };
+            eng.recordCall("close", #e3);
+
+            InOrder order = heap InOrder();
+            order.verify(eng, "open");
+            order.verify(eng, "write");
+            order.verify(eng, "write");
+            order.verify(eng, "close");
+
+            // out-of-order (open after close) is not found past the cursor -> fails
+            InOrder bad = heap InOrder();
+            bad.verify(eng, "close");
+            Assert.assertThrows(() -> {
+                bad.verify(eng, "open");
+            });
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

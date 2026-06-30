@@ -114,8 +114,10 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       downcast and assert on. Instance methods, not a static captor: a
       multi-param free function can't return a borrow, and a stateful captor
       holding refs would double-free. Self-tested (17 green).
-- [ ] **4a.6 InOrder** — `Mock.inOrder()`; ordered `verify(engine, name[, matchers])`
-      across one or more engines via a monotonic cursor. Self-test.
+- [x] **4a.6 InOrder** — `heap InOrder()`; ordered `verify(engine, name)` /
+      `verifyWith(engine, name, #Matcher[])` via a monotonic cursor (state is just
+      the int cursor; engine passed per call). Per-engine ordering (cross-engine
+      deferred). Self-tested incl. out-of-order failure (18 green).
 - [ ] **4a.7 Docs** — `docs/mockito-aot.md` (the engine, the hand-written-mock
       recipe, the matrix of what AoT supports vs. Mockito); update `test-doubles.md`
       "what's NOT implemented", README status, spec §5.
