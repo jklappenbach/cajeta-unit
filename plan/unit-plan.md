@@ -109,8 +109,11 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       `neverWith(engine, name, #Matcher[][, n])` + `count`. Backed by
       `MockEngine.callCount`/`matchingCalls`. `CallLog`/`Verify` kept intact.
       Self-tested (16 green).
-- [ ] **4a.5 ArgumentCaptor** — capture the nth arg of matched invocations
-      (`values()`, `value()` = last). Self-test.
+- [x] **4a.5 Argument capture** — `MockEngine.argOf(name, callIndex, argIndex)` /
+      `lastArgOf(name, argIndex)` hand back the (engine-owned) boxed argument to
+      downcast and assert on. Instance methods, not a static captor: a
+      multi-param free function can't return a borrow, and a stateful captor
+      holding refs would double-free. Self-tested (17 green).
 - [ ] **4a.6 InOrder** — `Mock.inOrder()`; ordered `verify(engine, name[, matchers])`
       across one or more engines via a monotonic cursor. Self-test.
 - [ ] **4a.7 Docs** — `docs/mockito-aot.md` (the engine, the hand-written-mock

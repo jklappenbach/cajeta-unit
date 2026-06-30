@@ -283,6 +283,20 @@ public class SelfTest {
             });
         });
 
+        t.test("argument capture: read the args a mock received", () -> {
+            MockEngine eng = heap MockEngine();
+            Object[] a1 = { Int64.of(10), "x" };
+            eng.recordCall("send", #a1);
+            Object[] a2 = { Int64.of(20), "y" };
+            eng.recordCall("send", #a2);
+
+            Assert.that(((Int64) eng.argOf("send", 0, 0)).value()).isEqualTo(10);
+            Assert.that(((Int64) eng.argOf("send", 1, 0)).value()).isEqualTo(20);
+            Assert.that((String) eng.argOf("send", 1, 1)).isEqualTo("y");
+            Assert.that(((Int64) eng.lastArgOf("send", 0)).value()).isEqualTo(20);
+            Assert.isTrue(eng.argOf("send", 9, 0) == null);
+        });
+
         t.skip("a deliberately skipped test", "demonstrates skip");
 
         int32 rc = t.summary();

@@ -118,6 +118,51 @@ public class MockEngine {
         return this.calls.get(i);
     }
 
+    /** The `nth` (0-based) recorded call to `method`, or null if there are fewer. */
+    public Invocation invocationOf(String method, int32 nth) {
+        int32 seen = 0;
+        int32 i = 0;
+        int32 c = (int32) this.calls.count();
+        while (i < c) {
+            Invocation inv = this.calls.get(i);
+            if (inv.method().equals(method)) {
+                if (seen == nth) {
+                    return inv;
+                }
+                seen = seen + 1;
+            }
+            i = i + 1;
+        }
+        return null;
+    }
+
+    /**
+     * Argument capture — the AoT analogue of Mockito's `ArgumentCaptor`. Read the
+     * `argIndex`-th argument of the `callIndex`-th (0-based) call to `method`,
+     * boxed (downcast it); null if that call or argument is absent. The engine
+     * owns the argument, so this hands back a borrow — assert on it while the
+     * engine is alive.
+     */
+    public Object argOf(String method, int32 callIndex, int32 argIndex) {
+        Invocation inv = this.invocationOf(method, callIndex);
+        if (inv == null) {
+            return null;
+        }
+        if (argIndex >= inv.argCount()) {
+            return null;
+        }
+        return inv.arg(argIndex);
+    }
+
+    /** Capture the `argIndex`-th argument of the **last** call to `method` (borrow). */
+    public Object lastArgOf(String method, int32 argIndex) {
+        int32 n = this.callCount(method);
+        if (n == 0) {
+            return null;
+        }
+        return this.argOf(method, n - 1, argIndex);
+    }
+
     /** Number of recorded calls to `method` whose arguments satisfy `matchers`. */
     public int32 matchingCalls(String method, Matcher[] matchers) {
         int32 n = 0;
