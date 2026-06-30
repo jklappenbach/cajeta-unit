@@ -1,0 +1,63 @@
+{
+    // cajeta-unit tour — a worked example of consuming the dev.cajeta.unit
+    // library and a showcase of every part of it, one demo class per capability.
+    //
+    // Standard project shape (cajeta.json + src/main/cajeta/<package>/*.cajeta).
+    // Because build-tool manifest classpath plumbing is not shipped yet, the
+    // build/run tasks delegate to build.sh / run.sh, which build the
+    // dev.cajeta.unit .cja and then compile this tour against it with
+    // --classpath. Override the compiler with CAJETA=/path/to/cajeta.
+    //
+    //   ./build.sh   → build/tour          (or: cajeta build)
+    //   ./run.sh     → build + execute     (or: cajeta run)
+
+    "details": {
+        "name":                "tour",
+        "version":             "0.1.0",
+        "description":         "cajeta-unit feature tour",
+        "license":             "Apache-2.0",
+        "authors":             ["cajeta"],
+        "cajeta-lang-version": "1.0"
+    },
+
+    "settings": {
+        "capabilities": [],
+
+        // The tour links against the dev.cajeta.unit library. When build-tool
+        // classpath plumbing lands this becomes a first-class dependency; until
+        // then build.sh wires it via --classpath.
+        "dependencies": {
+            "dev.cajeta.unit": "0.1.*"
+        },
+
+        "build": {
+            "source-root":  "src/main/cajeta",
+            "target":       "host",
+            "entry-method": "tour.Tour::main"
+        }
+    },
+
+    "tasks": {
+
+        "build": {
+            "description": "Build the tour (build/tour) against the dev.cajeta.unit .cja",
+            "actions": [
+                { "action": "exec", "command": "bash", "args": ["build.sh"] }
+            ]
+        },
+
+        "run": {
+            "description": "Build the tour and run it",
+            "actions": [
+                { "action": "exec", "command": "bash", "args": ["run.sh"] }
+            ]
+        },
+
+        "clean": {
+            "description": "Wipe build outputs",
+            "actions": [
+                { "action": "exec", "command": "rm", "args": ["-rf", "build"] }
+            ]
+        }
+    }
+}

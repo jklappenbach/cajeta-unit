@@ -1,0 +1,27 @@
+package tour.assertions;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+
+// Showcases dev.cajeta.unit.Assert — the fluent + classic assertion surface:
+// Assert.that(int/String) ... isEqualTo/startsWith/..., Assert.thatFloat,
+// Assert.isTrue/isFalse, Assert.fail, Assert.assertThrows.
+public class AssertionsDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Assertions (Assert) --");
+
+        Assert.that(2 + 2).isEqualTo(4);
+        Assert.that(5).isGreaterThan(3);
+        Assert.that("o_42").startsWith("o_");
+        Assert.that("o_42").hasLength(4);
+        Assert.thatFloat(3.14159).isCloseTo(3.14, 0.01);
+        Assert.isTrue(1 < 2);
+        Assert.isFalse(2 < 1);
+        Assert.assertThrows(() -> {
+            Assert.fail("deliberate failure");
+        });
+
+        System.stdout.println("  passed: that / thatFloat / isTrue / isFalse / assertThrows");
+    }
+}

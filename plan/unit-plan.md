@@ -129,10 +129,12 @@ _User-requested: a tour like `cajeta/samples/tour` — a build-tool app whose de
 packages mirror cajeta-unit's packages/classes. Each demo extends `DemoClass` and
 overrides `execute()`; `Tour.main` walks a `demos[]` array._
 
-- [ ] **6.1 Scaffold** — `samples/tour/cajeta.json` (binary archetype, entry
-      `tour.Tour::main`, depends on the built `dev.cajeta.unit` `.cja` via
-      `--classpath`), `DemoClass` base, `Tour` entry, `build.sh`/`run.sh`, `.gitignore`.
-      Builds + runs green.
+- [x] **6.1 Scaffold** — `samples/tour/` `cajeta.json` (entry `tour.Tour::main`),
+      `DemoClass` base, `Tour` entry walking an `ArrayList<DemoClass>`,
+      `build.sh`/`run.sh` (build the `dev.cajeta.unit` `.cja`, then compile the tour
+      against it via `--classpath` — manifest classpath isn't shipped), `.gitignore`.
+      Builds + runs green (assertions + matchers demos). Consumer linking the `.cja`
+      verified.
 - [ ] **6.2 Demo packages mirroring unit** — `tour.assertions` (Assert fluent +
       classic), `tour.discovery` (`@Test`/lifecycle + `Runner`), `tour.doubles`
       (CallLog/Verify hand-written mock), `tour.matchers`, `tour.stubbing`,

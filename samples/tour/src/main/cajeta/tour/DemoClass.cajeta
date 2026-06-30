@@ -1,0 +1,15 @@
+package tour;
+
+// Base class for every demo in the cajeta-unit tour. Each demo extends
+// DemoClass and overrides execute() to showcase one unit capability;
+// Tour.main builds an ArrayList<DemoClass> of every demo and walks it
+// calling execute() — so adding a demo means a new .cajeta file plus one
+// `demos.add(heap NewDemo());` line in Tour.cajeta.
+//
+// Same shape as the language tour's DemoClass. There is no `abstract`
+// keyword yet, so execute() is an empty concrete method every subclass
+// overrides.
+public class DemoClass {
+    public void execute() {
+    }
+}

@@ -1,0 +1,33 @@
+package tour.matchers;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Matcher;
+import dev.cajeta.unit.ArgMatchers;
+import cajeta.lang.Int64;
+
+// Showcases dev.cajeta.unit.ArgMatchers / Matcher — the argument matchers used
+// by stubbing and verification: any / eqInt / isNull / notNull / argThat.
+public class MatchersDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Argument matchers (ArgMatchers) --");
+
+        Matcher any = ArgMatchers.any();
+        Matcher eq = ArgMatchers.eqInt(1999);
+        Matcher notNull = ArgMatchers.notNull();
+        Matcher big = ArgMatchers.argThat((Object o) -> {
+            Int64 i = (Int64) o;
+            return i.value() > 1000;
+        });
+
+        Assert.isTrue(any.matches(Int64.of(7)));
+        Assert.isTrue(eq.matches(Int64.of(1999)));
+        Assert.isFalse(eq.matches(Int64.of(2000)));
+        Assert.isTrue(notNull.matches(Int64.of(1)));
+        Assert.isFalse(notNull.matches(null));
+        Assert.isTrue(big.matches(Int64.of(5000)));
+
+        System.stdout.println("  any matched 7, eqInt(1999) matched 1999, argThat(>1000) matched 5000");
+    }
+}
