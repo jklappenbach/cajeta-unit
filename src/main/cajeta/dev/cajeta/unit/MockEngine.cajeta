@@ -1,0 +1,67 @@
+package dev.cajeta.unit;
+
+import cajeta.collection.ArrayList;
+
+/**
+ * The recording (and, with stubbing, answering) core a hand-written mock holds.
+ * It is the AoT replacement for Mockito's runtime proxy: instead of generating a
+ * proxy that intercepts calls, the mock *itself* forwards each call here.
+ *
+ * ```cajeta
+ * public class MockGateway extends PaymentGateway {
+ *     public MockEngine engine = heap MockEngine();
+ *     public Receipt charge(int64 amount) {
+ *         Object[] a = { Int64.of(amount) };
+ *         this.engine.recordCall("charge", #a);
+ *         return (Receipt) this.engine.answer("charge", a);
+ *     }
+ * }
+ * ```
+ *
+ * The test then verifies against the engine ({@Link MockVerify}) and programs
+ * answers on it ({@Link Stubbing}). This phase covers recording + querying;
+ * answering is layered on in {@Link Stubbing}. Each {@Link Invocation} (and its
+ * boxed argument array) is **owned** by the engine.
+ */
+public class MockEngine {
+    ArrayList<Invocation> calls;
+
+    public MockEngine() {
+        this.calls = heap ArrayList<Invocation>();
+    }
+
+    /** Record one call: its method name and the (owned) boxed argument array. */
+    public void recordCall(String method, #Object[] args) {
+        this.calls.add(heap Invocation(method, #args));
+    }
+
+    /** Total number of recorded calls across all methods. */
+    public int32 totalCalls() {
+        return (int32) this.calls.count();
+    }
+
+    /** Number of recorded calls to `method`. */
+    public int32 callCount(String method) {
+        int32 n = 0;
+        int32 i = 0;
+        int32 c = (int32) this.calls.count();
+        while (i < c) {
+            Invocation inv = this.calls.get(i);
+            if (inv.method().equals(method)) {
+                n = n + 1;
+            }
+            i = i + 1;
+        }
+        return n;
+    }
+
+    /** The recorded call at index `i` (0-based, in call order). */
+    public Invocation invocationAt(int32 i) {
+        return this.calls.get(i);
+    }
+
+    /** Forget all recorded calls (reuse the engine across cases). */
+    public void reset() {
+        this.calls = heap ArrayList<Invocation>();
+    }
+}

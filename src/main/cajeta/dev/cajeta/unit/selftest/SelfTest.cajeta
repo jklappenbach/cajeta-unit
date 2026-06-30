@@ -7,6 +7,8 @@ import dev.cajeta.unit.Runner;
 import dev.cajeta.unit.CallLog;
 import dev.cajeta.unit.Verify;
 import dev.cajeta.unit.ArgMatchers;
+import dev.cajeta.unit.MockEngine;
+import dev.cajeta.unit.Invocation;
 import dev.cajeta.unit.selftest.inject.Service;
 import cajeta.lang.Int64;
 
@@ -171,6 +173,29 @@ public class SelfTest {
                 Int64 i = (Int64) o;
                 return i.value() > 10;
             }).matches(Int64.of(5)));
+        });
+
+        t.test("MockEngine records invocations and arguments", () -> {
+            MockEngine eng = heap MockEngine();
+            Object[] a1 = { Int64.of(1999) };
+            eng.recordCall("charge", #a1);
+            Object[] a2 = { Int64.of(5) };
+            eng.recordCall("charge", #a2);
+            Object[] a3 = { };
+            eng.recordCall("refund", #a3);
+            Assert.that(eng.totalCalls()).isEqualTo(3);
+            Assert.that(eng.callCount("charge")).isEqualTo(2);
+            Assert.that(eng.callCount("refund")).isEqualTo(1);
+            Assert.that(eng.callCount("nope")).isEqualTo(0);
+
+            Invocation first = eng.invocationAt(0);
+            Assert.that(first.argCount()).isEqualTo(1);
+            Int64 amt = (Int64) first.arg(0);
+            Assert.that(amt.value()).isEqualTo(1999);
+
+            Invocation refund = eng.invocationAt(2);
+            Assert.that(refund.method()).isEqualTo("refund");
+            Assert.that(refund.argCount()).isEqualTo(0);
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

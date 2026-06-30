@@ -92,9 +92,10 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       interface crashes from a `#`-factory, so it's a class) + `ArgMatchers`:
       `any()`, `eq(#Object)`, `eqInt(int64)`, `isNull()`, `notNull()`,
       `argThat((Object)->boolean)`. Self-tested (`SelfTest.run`, 12 green).
-- [ ] **4a.2 MockEngine + Invocation** — `Invocation(name, Object[] args)`;
-      `MockEngine.record(name, args)`, invocation list, `callCount(name)`,
-      `invocations(name)`, arg access. Self-test.
+- [x] **4a.2 MockEngine + Invocation** — `Invocation(name, #Object[] args)` (owns
+      args; `method()`/`argCount()`/`arg(i)`); `MockEngine.recordCall(name, #args)`
+      (`record` is a reserved word), `totalCalls()`, `callCount(name)`,
+      `invocationAt(i)`, `reset()`. Self-tested (13 green).
 - [ ] **4a.3 Stubbing** — `Mock.when(engine, name)` → `Stubbing` with
       `.with(Matcher[])`, `.thenReturn(Object)` (consecutive), `.thenThrow(Throwable)`;
       `engine.answer(name, args)` resolves first matching rule (else default/null).

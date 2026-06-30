@@ -1,0 +1,45 @@
+package dev.cajeta.unit;
+
+/**
+ * One recorded call against a mock — the method name plus its arguments, each
+ * boxed into an `Object`. The unit a {@Link MockEngine} stores and that matchers,
+ * verification, and captors read back.
+ *
+ * A hand-written mock builds the argument array and records it:
+ * ```cajeta
+ * public Receipt charge(int64 amount) {
+ *     Object[] a = { Int64.of(amount) };
+ *     this.engine.recordCall("charge", #a);
+ *     return (Receipt) this.engine.answer("charge", a);
+ * }
+ * ```
+ *
+ * The `Invocation` **owns** its argument array (transferred in with `#`); read
+ * arguments back with `arg(i)` and downcast (`(Int64) inv.arg(0)`). The method
+ * name is a borrowed `String` (mock method names are compile-time literals with
+ * static lifetime, like the names {@Link CallLog} stores).
+ */
+public class Invocation {
+    String method;
+    Object[] args;
+
+    public Invocation(String method, #Object[] args) {
+        this.method = method;
+        this.args = #args;
+    }
+
+    /** The recorded method name. */
+    public String method() {
+        return this.method;
+    }
+
+    /** Number of arguments captured for this call. */
+    public int32 argCount() {
+        return (int32) this.args.count();
+    }
+
+    /** The boxed argument at index `i` (downcast it to the concrete type). */
+    public Object arg(int32 i) {
+        return this.args[i];
+    }
+}
