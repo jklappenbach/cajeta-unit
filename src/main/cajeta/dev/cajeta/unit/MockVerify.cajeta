@@ -1,0 +1,90 @@
+package dev.cajeta.unit;
+
+/**
+ * Interaction verification on a mock — the AoT analogue of Mockito's static
+ * `verify(...)`. Pairs with {@Link Mock} (`when`) and {@Link MockEngine}.
+ *
+ * ```cajeta
+ * MockVerify.times(gateway.engine, "charge", 1);
+ * MockVerify.never(gateway.engine, "refund");
+ * MockVerify.atLeast(gateway.engine, "retry", 2);
+ *
+ * Matcher[] m = { ArgMatchers.eqInt(1999) };
+ * MockVerify.timesWith(gateway.engine, "charge", #m, 1);     // argument-matched count
+ * ```
+ *
+ * **Static, one-shot, engine-borrowing** by design: a fluent `verify(...).times()`
+ * builder would have to stash a borrowed engine in a heap object and read it back,
+ * which is unreliable in the current toolchain (the borrow does not survive across
+ * the call in some build compositions). Each method here instead does its count
+ * directly on the engine in a single call — the same shape as the reliable
+ * `MockEngine.callCount`. For a method-name-only `CallLog`, {@Link Verify} remains;
+ * `MockVerify` adds the `times/atLeast/atMost` family and argument matchers over a
+ * recording {@Link MockEngine}.
+ *
+ * Each check fails the test (throws `AssertionFailure` via `Assert.fail`) with a
+ * high-signal `expected <n> but was <m>` message when the count is wrong.
+ */
+public final class MockVerify {
+
+    /** Number of recorded calls to `method` (any arguments). */
+    public static int32 count(MockEngine engine, String method) {
+        return engine.callCount(method);
+    }
+
+    /** Number of recorded calls to `method` whose arguments satisfy `matchers` (owned). */
+    public static int32 countWith(MockEngine engine, String method, #Matcher[] matchers) {
+        return engine.matchingCalls(method, #matchers);
+    }
+
+    /** Fail unless `method` was called exactly `expected` times (any arguments). */
+    public static void times(MockEngine engine, String method, int32 expected) {
+        int32 actual = engine.callCount(method);
+        if (actual != expected) {
+            Assert.fail("expected " + expected + " call(s) to '" + method
+                + "' but was " + actual);
+        }
+    }
+
+    /** Fail unless `method` was called exactly once. */
+    public static void once(MockEngine engine, String method) {
+        MockVerify.times(engine, method, 1);
+    }
+
+    /** Fail unless `method` was never called. */
+    public static void never(MockEngine engine, String method) {
+        MockVerify.times(engine, method, 0);
+    }
+
+    /** Fail unless `method` was called at least `min` times. */
+    public static void atLeast(MockEngine engine, String method, int32 min) {
+        int32 actual = engine.callCount(method);
+        if (actual < min) {
+            Assert.fail("expected at least " + min + " call(s) to '" + method
+                + "' but was " + actual);
+        }
+    }
+
+    /** Fail unless `method` was called at most `max` times. */
+    public static void atMost(MockEngine engine, String method, int32 max) {
+        int32 actual = engine.callCount(method);
+        if (actual > max) {
+            Assert.fail("expected at most " + max + " call(s) to '" + method
+                + "' but was " + actual);
+        }
+    }
+
+    /** Fail unless `method` was called exactly `expected` times with matching args. */
+    public static void timesWith(MockEngine engine, String method, #Matcher[] matchers, int32 expected) {
+        int32 actual = engine.matchingCalls(method, #matchers);
+        if (actual != expected) {
+            Assert.fail("expected " + expected + " matching call(s) to '" + method
+                + "' but was " + actual);
+        }
+    }
+
+    /** Fail unless no call to `method` had matching arguments. */
+    public static void neverWith(MockEngine engine, String method, #Matcher[] matchers) {
+        MockVerify.timesWith(engine, method, #matchers, 0);
+    }
+}

@@ -51,24 +51,7 @@ public class StubRule {
 
     /** Whether this rule applies to `inv` (a call to `method`). */
     public boolean matchesCall(String method, Invocation inv) {
-        if (!this.method.equals(method)) {
-            return false;
-        }
-        if (!this.hasMatchers) {
-            return true;
-        }
-        int32 n = (int32) this.matchers.count();
-        if (inv.argCount() != n) {
-            return false;
-        }
-        int32 i = 0;
-        while (i < n) {
-            if (!this.matchers[i].matches(inv.arg(i))) {
-                return false;
-            }
-            i = i + 1;
-        }
-        return true;
+        return MockEngine.matchesArgs(this.method, this.hasMatchers, this.matchers, inv);
     }
 
     /**

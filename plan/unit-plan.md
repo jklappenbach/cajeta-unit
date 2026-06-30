@@ -103,10 +103,12 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       rule (else null), throwing for `thenThrow`. Mock body downcasts the `Object`.
       Self-tested: box + user-type round-trip, consecutive, matcher-selected,
       unstubbed→null, thenThrow (15 green).
-- [ ] **4a.4 Rich verification** — `MockVerify.on(engine, name)` →
-      `.with(Matcher[])` then `.times(n)/once()/never()/atLeast(n)/atMost(n)`; each
-      fails via `Assert.fail` with a high-signal message. Keep `CallLog`/`Verify`
-      (name-only) intact. Self-test.
+- [x] **4a.4 Rich verification** — `MockVerify` **static** (a fluent clause that
+      stashed a borrowed engine was unreliable in full builds): `times/once/never/
+      atLeast/atMost(engine, name[, n])` + matcher forms `countWith`/`timesWith`/
+      `neverWith(engine, name, #Matcher[][, n])` + `count`. Backed by
+      `MockEngine.callCount`/`matchingCalls`. `CallLog`/`Verify` kept intact.
+      Self-tested (16 green).
 - [ ] **4a.5 ArgumentCaptor** — capture the nth arg of matched invocations
       (`values()`, `value()` = last). Self-test.
 - [ ] **4a.6 InOrder** — `Mock.inOrder()`; ordered `verify(engine, name[, matchers])`

@@ -1,5 +1,7 @@
 package dev.cajeta.unit;
 
+import cajeta.lang.Int64;
+
 /**
  * An argument matcher — the predicate side of Mockito-style stubbing and
  * verification. A matcher answers "does this recorded argument satisfy me?"
@@ -22,10 +24,68 @@ package dev.cajeta.unit;
  * `matches(...)` — the same shape as the tour's `DemoClass` — dispatches
  * correctly, including from a `#`-returning factory and through a `Matcher[]`.
  * The default `matches(...)` returns false; every real matcher overrides it.
+ *
+ * **The concrete matchers live in this file, after the base**, deliberately:
+ * source files parse in alphabetical order, so if a subclass parsed (in
+ * `ArgMatchers.cajeta`, which sorts first) while `Matcher` were only a
+ * forward-reference placeholder, the subclass vtable links to the placeholder
+ * and virtual dispatch through a *stored* `Matcher` reference resolves to the
+ * wrong override. Defining the subclasses below the base, in the same file,
+ * keeps the base concrete when they parse.
  */
 public class Matcher {
     /** Whether `arg` (a boxed argument, possibly null) satisfies this matcher. */
     public boolean matches(Object arg) {
         return false;
+    }
+}
+
+/** Always matches. */
+class AnyMatcher extends Matcher {
+    public boolean matches(Object arg) {
+        return true;
+    }
+}
+
+/** Value-equality against an owned expected value. */
+class EqMatcher extends Matcher {
+    Object expected;
+
+    public EqMatcher(#Object expected) {
+        this.expected = #expected;
+    }
+
+    public boolean matches(Object arg) {
+        // Object.operator== is null-safe and dispatches value-based hash().
+        return this.expected == arg;
+    }
+}
+
+/** Matches null (or non-null). */
+class NullMatcher extends Matcher {
+    boolean wantNull;
+
+    public NullMatcher(boolean wantNull) {
+        this.wantNull = wantNull;
+    }
+
+    public boolean matches(Object arg) {
+        if (this.wantNull) {
+            return arg == null;
+        }
+        return arg != null;
+    }
+}
+
+/** Delegates to a user predicate (the `argThat` engine). */
+class PredMatcher extends Matcher {
+    (Object) -> boolean pred;
+
+    public PredMatcher((Object) -> boolean pred) {
+        this.pred = pred;
+    }
+
+    public boolean matches(Object arg) {
+        return this.pred(arg);
     }
 }

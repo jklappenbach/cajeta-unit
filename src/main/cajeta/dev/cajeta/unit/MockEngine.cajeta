@@ -55,6 +55,32 @@ public class MockEngine {
         return this.resolve(method, inv);
     }
 
+    /**
+     * Shared argument matching used by both stub-rule resolution and
+     * verification: does `inv` target `method` and satisfy the matcher set?
+     * An empty matcher set (`hasMatchers == false`) matches any arguments.
+     */
+    public static boolean matchesArgs(String method, boolean hasMatchers, Matcher[] matchers, Invocation inv) {
+        if (!inv.method().equals(method)) {
+            return false;
+        }
+        if (!hasMatchers) {
+            return true;
+        }
+        int32 n = (int32) matchers.count();
+        if (inv.argCount() != n) {
+            return false;
+        }
+        int32 i = 0;
+        while (i < n) {
+            if (!matchers[i].matches(inv.arg(i))) {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
+    }
+
     Object resolve(String method, Invocation inv) {
         int32 i = (int32) this.rules.count() - 1;
         while (i >= 0) {
@@ -90,6 +116,21 @@ public class MockEngine {
     /** The recorded call at index `i` (0-based, in call order). */
     public Invocation invocationAt(int32 i) {
         return this.calls.get(i);
+    }
+
+    /** Number of recorded calls to `method` whose arguments satisfy `matchers`. */
+    public int32 matchingCalls(String method, Matcher[] matchers) {
+        int32 n = 0;
+        int32 i = 0;
+        int32 c = (int32) this.calls.count();
+        while (i < c) {
+            Invocation inv = this.calls.get(i);
+            if (MockEngine.matchesArgs(method, true, matchers, inv)) {
+                n = n + 1;
+            }
+            i = i + 1;
+        }
+        return n;
     }
 
     /** Forget all recorded calls and stub rules (reuse the engine across cases). */

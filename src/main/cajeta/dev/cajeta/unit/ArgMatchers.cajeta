@@ -8,13 +8,17 @@ import cajeta.lang.Int64;
  *
  * ```cajeta
  * Matcher[] expected = { ArgMatchers.eqInt(1999) };
- * MockVerify.on(gateway.engine, "charge").with(expected).times(1);
+ * MockVerify.on(gateway.engine, "charge").withArgs(#expected).times(1);
  * ```
  *
  * `eq(...)` compares by `Object` equality, which dispatches the **value-based**
  * `hash()` of box types (`Int64`, `String`, …) — so `eqInt(1999)` matches any
  * boxed `1999`, not just one identical instance. `eq(...)` takes ownership of its
  * expected value (`#`); the convenience overloads (`eqInt`) box for you.
+ *
+ * The concrete `Matcher` subclasses this returns are defined in {@Link Matcher}'s
+ * file (after the base class) — see the note there on file parse order and
+ * vtable correctness for stored matcher references.
  */
 public final class ArgMatchers {
 
@@ -46,55 +50,5 @@ public final class ArgMatchers {
     /** Matches when `pred` accepts the (boxed) argument. Mockito's `argThat(...)`. */
     public static #Matcher argThat((Object) -> boolean pred) {
         return heap PredMatcher(pred);
-    }
-}
-
-/** Always matches. */
-class AnyMatcher extends Matcher {
-    public boolean matches(Object arg) {
-        return true;
-    }
-}
-
-/** Value-equality against an owned expected value. */
-class EqMatcher extends Matcher {
-    Object expected;
-
-    public EqMatcher(#Object expected) {
-        this.expected = #expected;
-    }
-
-    public boolean matches(Object arg) {
-        // Object.operator== is null-safe and dispatches value-based hash().
-        return this.expected == arg;
-    }
-}
-
-/** Matches null (or non-null). */
-class NullMatcher extends Matcher {
-    boolean wantNull;
-
-    public NullMatcher(boolean wantNull) {
-        this.wantNull = wantNull;
-    }
-
-    public boolean matches(Object arg) {
-        if (this.wantNull) {
-            return arg == null;
-        }
-        return arg != null;
-    }
-}
-
-/** Delegates to a user predicate (the `argThat` engine). */
-class PredMatcher extends Matcher {
-    (Object) -> boolean pred;
-
-    public PredMatcher((Object) -> boolean pred) {
-        this.pred = pred;
-    }
-
-    public boolean matches(Object arg) {
-        return this.pred(arg);
     }
 }

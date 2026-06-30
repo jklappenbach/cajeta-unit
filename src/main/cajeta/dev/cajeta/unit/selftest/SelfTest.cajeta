@@ -10,6 +10,7 @@ import dev.cajeta.unit.ArgMatchers;
 import dev.cajeta.unit.MockEngine;
 import dev.cajeta.unit.Invocation;
 import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.MockVerify;
 import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.selftest.inject.Service;
 import dev.cajeta.unit.selftest.doubles.Coin;
@@ -245,6 +246,40 @@ public class SelfTest {
             Assert.assertThrows(() -> {
                 Object[] e0 = { };
                 eng.handle("boom", #e0);
+            });
+        });
+
+        t.test("verification: times/once/never/atLeast/atMost with matchers", () -> {
+            MockEngine eng = heap MockEngine();
+            Object[] a1 = { Int64.of(1999) };
+            eng.recordCall("charge", #a1);
+            Object[] a2 = { Int64.of(1999) };
+            eng.recordCall("charge", #a2);
+            Object[] a3 = { Int64.of(5) };
+            eng.recordCall("charge", #a3);
+            Object[] cl = { };
+            eng.recordCall("close", #cl);
+
+            MockVerify.times(eng, "charge", 3);
+            MockVerify.atLeast(eng, "charge", 2);
+            MockVerify.atMost(eng, "charge", 3);
+            MockVerify.once(eng, "close");
+            MockVerify.never(eng, "open");
+            Assert.that(MockVerify.count(eng, "charge")).isEqualTo(3);
+
+            Matcher[] m1999 = { ArgMatchers.eqInt(1999) };
+            MockVerify.timesWith(eng, "charge", #m1999, 2);
+            Matcher[] m5 = { ArgMatchers.eqInt(5) };
+            MockVerify.timesWith(eng, "charge", #m5, 1);
+            Matcher[] mNeg = { ArgMatchers.eqInt(404) };
+            MockVerify.neverWith(eng, "charge", #mNeg);
+
+            // wrong counts fail the verification (throw)
+            Assert.assertThrows(() -> {
+                MockVerify.times(eng, "charge", 99);
+            });
+            Assert.assertThrows(() -> {
+                MockVerify.atLeast(eng, "open", 1);
             });
         });
 
