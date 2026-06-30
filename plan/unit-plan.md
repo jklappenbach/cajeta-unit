@@ -96,10 +96,13 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       args; `method()`/`argCount()`/`arg(i)`); `MockEngine.recordCall(name, #args)`
       (`record` is a reserved word), `totalCalls()`, `callCount(name)`,
       `invocationAt(i)`, `reset()`. Self-tested (13 green).
-- [ ] **4a.3 Stubbing** — `Mock.when(engine, name)` → `Stubbing` with
-      `.with(Matcher[])`, `.thenReturn(Object)` (consecutive), `.thenThrow(Throwable)`;
-      `engine.answer(name, args)` resolves first matching rule (else default/null).
-      Mock body downcasts the `Object` result. Self-test round-trip (user type + box).
+- [x] **4a.3 Stubbing** — `Mock.when(engine, name)` → `Stubbing` with
+      `.withArgs(#Matcher[])` (`with` is reserved), `.thenReturn(#Object)`
+      (consecutive; last repeats), `.thenThrow(#RecoverableException)`. Engine owns
+      `StubRule`s; `engine.handle(name, #args)` records + resolves the last matching
+      rule (else null), throwing for `thenThrow`. Mock body downcasts the `Object`.
+      Self-tested: box + user-type round-trip, consecutive, matcher-selected,
+      unstubbed→null, thenThrow (15 green).
 - [ ] **4a.4 Rich verification** — `MockVerify.on(engine, name)` →
       `.with(Matcher[])` then `.times(n)/once()/never()/atLeast(n)/atMost(n)`; each
       fails via `Assert.fail` with a high-signal message. Keep `CallLog`/`Verify`

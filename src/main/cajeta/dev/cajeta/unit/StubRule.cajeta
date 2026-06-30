@@ -1,0 +1,94 @@
+package dev.cajeta.unit;
+
+import cajeta.collection.ArrayList;
+import cajeta.error.RecoverableException;
+
+/**
+ * One programmed answer for a method — the AoT form of a single Mockito
+ * `when(...).thenReturn(...)` stubbing. Owned by a {@Link MockEngine}; built and
+ * configured through {@Link Stubbing}.
+ *
+ * A rule matches a call when the method name matches and either it has no
+ * argument matchers (matches any arguments) or every matcher accepts the
+ * corresponding argument. A matched rule answers with its programmed return
+ * values in order — repeating the last once exhausted, like Mockito — or throws
+ * its programmed exception.
+ */
+public class StubRule {
+    String method;
+    Matcher[] matchers;
+    boolean hasMatchers;
+    ArrayList<Object> returns;
+    int32 idx;
+    RecoverableException toThrow;
+    boolean willThrow;
+
+    public StubRule(String method) {
+        this.method = method;
+        this.hasMatchers = false;
+        this.returns = heap ArrayList<Object>();
+        this.idx = 0;
+        this.willThrow = false;
+        this.toThrow = null;
+    }
+
+    /** Restrict this rule to calls whose arguments satisfy `matchers` (owned). */
+    public void setMatchers(#Matcher[] matchers) {
+        this.matchers = #matchers;
+        this.hasMatchers = true;
+    }
+
+    /** Append a return value (consecutive calls advance through these). Owns `v`. */
+    public void addReturn(#Object v) {
+        this.returns.add(#v);
+    }
+
+    /** Program this rule to throw `ex` instead of returning. Owns `ex`. */
+    public void setThrow(#RecoverableException ex) {
+        this.toThrow = #ex;
+        this.willThrow = true;
+    }
+
+    /** Whether this rule applies to `inv` (a call to `method`). */
+    public boolean matchesCall(String method, Invocation inv) {
+        if (!this.method.equals(method)) {
+            return false;
+        }
+        if (!this.hasMatchers) {
+            return true;
+        }
+        int32 n = (int32) this.matchers.count();
+        if (inv.argCount() != n) {
+            return false;
+        }
+        int32 i = 0;
+        while (i < n) {
+            if (!this.matchers[i].matches(inv.arg(i))) {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
+    }
+
+    /**
+     * The next programmed answer (borrowed; the rule retains ownership), or null
+     * if nothing was programmed. Throws the programmed exception if `thenThrow`
+     * was used.
+     */
+    public Object nextAnswer() {
+        if (this.willThrow) {
+            throw this.toThrow;
+        }
+        int32 c = (int32) this.returns.count();
+        if (c == 0) {
+            return null;
+        }
+        int32 use = this.idx;
+        if (use >= c) {
+            use = c - 1;
+        }
+        this.idx = this.idx + 1;
+        return this.returns.get(use);
+    }
+}

@@ -25,14 +25,46 @@ import cajeta.collection.ArrayList;
  */
 public class MockEngine {
     ArrayList<Invocation> calls;
+    ArrayList<StubRule> rules;
 
     public MockEngine() {
         this.calls = heap ArrayList<Invocation>();
+        this.rules = heap ArrayList<StubRule>();
     }
 
     /** Record one call: its method name and the (owned) boxed argument array. */
     public void recordCall(String method, #Object[] args) {
         this.calls.add(heap Invocation(method, #args));
+    }
+
+    /** Register a stub rule (owned); returns a borrowed handle for configuring it. */
+    public StubRule addRule(#StubRule rule) {
+        this.rules.add(#rule);
+        return this.rules.get((int32) this.rules.count() - 1);
+    }
+
+    /**
+     * Record the call AND return its programmed answer — the single call a mock
+     * method makes (`return (T) engine.handle(name, #args)`; void methods ignore
+     * the result). The last matching rule wins (Mockito ordering); with no
+     * matching rule the answer is null. May throw a `thenThrow` exception.
+     */
+    public Object handle(String method, #Object[] args) {
+        this.calls.add(heap Invocation(method, #args));
+        Invocation inv = this.calls.get((int32) this.calls.count() - 1);
+        return this.resolve(method, inv);
+    }
+
+    Object resolve(String method, Invocation inv) {
+        int32 i = (int32) this.rules.count() - 1;
+        while (i >= 0) {
+            StubRule rule = this.rules.get(i);
+            if (rule.matchesCall(method, inv)) {
+                return rule.nextAnswer();
+            }
+            i = i - 1;
+        }
+        return null;
     }
 
     /** Total number of recorded calls across all methods. */
@@ -60,8 +92,9 @@ public class MockEngine {
         return this.calls.get(i);
     }
 
-    /** Forget all recorded calls (reuse the engine across cases). */
+    /** Forget all recorded calls and stub rules (reuse the engine across cases). */
     public void reset() {
         this.calls = heap ArrayList<Invocation>();
+        this.rules = heap ArrayList<StubRule>();
     }
 }

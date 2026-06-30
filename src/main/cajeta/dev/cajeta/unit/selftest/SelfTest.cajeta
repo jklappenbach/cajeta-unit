@@ -9,8 +9,12 @@ import dev.cajeta.unit.Verify;
 import dev.cajeta.unit.ArgMatchers;
 import dev.cajeta.unit.MockEngine;
 import dev.cajeta.unit.Invocation;
+import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.selftest.inject.Service;
+import dev.cajeta.unit.selftest.doubles.Coin;
 import cajeta.lang.Int64;
+import cajeta.error.RecoverableException;
 
 /**
  * cajeta-unit's own test suite — the framework, tested with itself.
@@ -196,6 +200,52 @@ public class SelfTest {
             Invocation refund = eng.invocationAt(2);
             Assert.that(refund.method()).isEqualTo("refund");
             Assert.that(refund.argCount()).isEqualTo(0);
+        });
+
+        t.test("stubbing: thenReturn box + user type, consecutive, matcher-selected", () -> {
+            MockEngine eng = heap MockEngine();
+
+            // any-args return of a box
+            Mock.when(eng, "charge").thenReturn(#Int64.of(100));
+            Object[] c1 = { Int64.of(5) };
+            Assert.that(((Int64) eng.handle("charge", #c1)).value()).isEqualTo(100);
+
+            // user-type round trip (Object answer downcast back to a user class)
+            Mock.when(eng, "mint").thenReturn(#(heap Coin(25)));
+            Object[] m0 = { };
+            Coin coin = (Coin) eng.handle("mint", #m0);
+            Assert.that(coin.cents).isEqualTo(25);
+
+            // consecutive returns: 1, 2, then 2 repeats
+            Mock.when(eng, "next").thenReturn(#Int64.of(1)).thenReturn(#Int64.of(2));
+            Object[] n0 = { };
+            Object[] n1 = { };
+            Object[] n2 = { };
+            Assert.that(((Int64) eng.handle("next", #n0)).value()).isEqualTo(1);
+            Assert.that(((Int64) eng.handle("next", #n1)).value()).isEqualTo(2);
+            Assert.that(((Int64) eng.handle("next", #n2)).value()).isEqualTo(2);
+
+            // matcher-selected: distinct args route to distinct answers
+            Matcher[] mm1 = { ArgMatchers.eqInt(1) };
+            Matcher[] mm2 = { ArgMatchers.eqInt(2) };
+            Mock.when(eng, "f").withArgs(#mm1).thenReturn(#Int64.of(10));
+            Mock.when(eng, "f").withArgs(#mm2).thenReturn(#Int64.of(20));
+            Object[] f1 = { Int64.of(1) };
+            Object[] f2 = { Int64.of(2) };
+            Assert.that(((Int64) eng.handle("f", #f1)).value()).isEqualTo(10);
+            Assert.that(((Int64) eng.handle("f", #f2)).value()).isEqualTo(20);
+
+            // unstubbed method answers null
+            Object[] u0 = { };
+            Assert.isTrue(eng.handle("unstubbed", #u0) == null);
+        });
+        t.test("stubbing: thenThrow makes the call throw", () -> {
+            MockEngine eng = heap MockEngine();
+            Mock.when(eng, "boom").thenThrow(#(heap RecoverableException(#("kaboom"))));
+            Assert.assertThrows(() -> {
+                Object[] e0 = { };
+                eng.handle("boom", #e0);
+            });
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

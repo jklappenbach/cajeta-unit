@@ -1,0 +1,45 @@
+package dev.cajeta.unit;
+
+import cajeta.error.RecoverableException;
+
+/**
+ * The fluent builder behind `Mock.when(engine, "method")` — the AoT counterpart
+ * of Mockito's `when(...).thenReturn(...)`. Each builder registers (and then
+ * configures) one {@Link StubRule} on the engine.
+ *
+ * ```cajeta
+ * Mock.when(gateway.engine, "charge").thenReturn(#Int64.of(0));          // any args
+ * Matcher[] m = { ArgMatchers.eqInt(1999) };
+ * Mock.when(gateway.engine, "charge").withArgs(#m).thenReturn(#receipt); // matched args
+ * Mock.when(gateway.engine, "charge").thenThrow(#(heap DeclineError("no funds")));
+ * ```
+ *
+ * `withArgs`/`thenReturn` return the builder for chaining; consecutive
+ * `thenReturn` calls program successive answers. (The builder method is
+ * `withArgs`, not `with` — `with` is a reserved word.)
+ */
+public class Stubbing {
+    StubRule rule;
+
+    public Stubbing(MockEngine engine, String method) {
+        // The engine owns the rule; we keep a borrowed handle to configure it.
+        this.rule = engine.addRule(#(heap StubRule(method)));
+    }
+
+    /** Match only calls whose arguments satisfy `matchers` (owned). */
+    public Stubbing withArgs(#Matcher[] matchers) {
+        this.rule.setMatchers(#matchers);
+        return this;
+    }
+
+    /** Program the next return value (owned). Chain for consecutive answers. */
+    public Stubbing thenReturn(#Object value) {
+        this.rule.addReturn(#value);
+        return this;
+    }
+
+    /** Program the rule to throw `ex` (owned) instead of returning. */
+    public void thenThrow(#RecoverableException ex) {
+        this.rule.setThrow(#ex);
+    }
+}

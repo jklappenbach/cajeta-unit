@@ -1,0 +1,21 @@
+package dev.cajeta.unit;
+
+/**
+ * Entry points for programming and inspecting mocks — the AoT analogue of
+ * Mockito's static `when(...)` / `inOrder(...)` facade.
+ *
+ * ```cajeta
+ * Mock.when(gateway.engine, "charge").thenReturn(#receipt);
+ * ```
+ *
+ * There is no runtime proxy: a mock is a hand-written subclass that forwards
+ * each call to a {@Link MockEngine} (`recordCall` then `handle`). `Mock.when`
+ * programs that engine; {@Link MockVerify} verifies against it.
+ */
+public final class Mock {
+
+    /** Begin stubbing `method` on `engine` (engine borrowed). */
+    public static #Stubbing when(MockEngine engine, String method) {
+        return heap Stubbing(engine, method);
+    }
+}

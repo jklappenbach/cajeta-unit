@@ -1,0 +1,14 @@
+package dev.cajeta.unit.selftest.doubles;
+
+/**
+ * A trivial user-defined value type used by the doubles self-tests to prove that
+ * a stubbed `Object` answer round-trips back to a user class (not just a stdlib
+ * box / String) through `MockEngine.handle` + a downcast.
+ */
+public class Coin {
+    public int64 cents;
+
+    public Coin(int64 cents) {
+        this.cents = cents;
+    }
+}
