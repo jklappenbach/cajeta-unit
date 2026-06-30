@@ -144,8 +144,8 @@ overrides `execute()`; `Tour.main` walks a `demos[]` array._
       exception catch crashes (so `thenThrow`/inject deferred from the tour).
       Added a multi-call stubbed-return regression to the framework self-test.
       (`tour.inject`/TestContext deferred — needs `--profile=test`.)
-- [ ] **6.3 README** — `samples/tour/README.md` mapping each demo → the unit
-      package/class it showcases (mirrors the cajeta tour README shape).
+- [x] **6.3 README** — `samples/tour/README.md`: build/run, layout, a demo→unit
+      package/class mapping table, and the `.cja` consumer-boundary notes.
 
 ### Phase 5 — parameterization & polish
 - [ ] `@ParameterizedTest` + `@ValueSource/@MethodSource/@CsvSource`.
