@@ -1,0 +1,18 @@
+package dev.cajeta.unit.selftest.doubles;
+
+/**
+ * A production-style collaborator the doubles self-tests mock by hand. Defined
+ * before `MockGateway` (file name `Gateway` sorts before `MockGateway`) so the
+ * base is concrete when the subclass parses — the parse-order discipline that
+ * keeps virtual dispatch through a stored base reference correct.
+ */
+public class Gateway {
+    /** Charge an amount; a real gateway returns a receipt. */
+    public Coin charge(int64 amount) {
+        return null;
+    }
+
+    /** Refund an amount (void — exercises the record-only mock path). */
+    public void refund(int64 amount) {
+    }
+}

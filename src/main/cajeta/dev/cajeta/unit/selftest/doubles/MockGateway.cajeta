@@ -1,0 +1,30 @@
+package dev.cajeta.unit.selftest.doubles;
+
+import dev.cajeta.unit.MockEngine;
+import cajeta.lang.Int64;
+
+/**
+ * A hand-written mock of {@Link Gateway} — the canonical AoT mock recipe. It
+ * subclasses the real type, holds a {@Link MockEngine}, and forwards each call:
+ * a non-void method boxes its arguments, calls `engine.handle(name, #args)`, and
+ * downcasts the programmed answer; a void method calls `handle` and ignores the
+ * result (so `thenThrow` still fires). The test programs the engine with
+ * `Mock.when(gw.engine, ...)` and verifies it with `MockVerify` / `gw.engine.argOf`.
+ */
+public class MockGateway extends Gateway {
+    public MockEngine engine;
+
+    public MockGateway() {
+        this.engine = heap MockEngine();
+    }
+
+    public Coin charge(int64 amount) {
+        Object[] a = { Int64.of(amount) };
+        return (Coin) this.engine.handle("charge", #a);
+    }
+
+    public void refund(int64 amount) {
+        Object[] a = { Int64.of(amount) };
+        this.engine.handle("refund", #a);
+    }
+}

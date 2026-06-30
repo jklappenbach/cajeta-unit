@@ -113,6 +113,14 @@ class OrderServiceTest {
 
 ## 5. Test doubles — mocks, fakes, spies, stubs
 
+> **Shipped (v0.4):** the Mockito *surface* over an AoT engine — `when().
+> thenReturn/thenThrow`, `ArgMatchers` (`any/eq/isNull/notNull/argThat`),
+> `MockVerify` (`times/once/never/atLeast/atMost` + matcher forms), argument
+> capture, and `InOrder` — all over **hand-written** mock subclasses that forward
+> to a `MockEngine`. See [`mockito-aot.md`](mockito-aot.md). What remains
+> aspirational below: **auto-generated** `@Mock` subclasses (the codegen hook),
+> `thenAnswer`, and spies.
+
 Under the **no-runtime-proxy** constraint, doubles are produced at compile time or by hand.
 
 ### Fakes

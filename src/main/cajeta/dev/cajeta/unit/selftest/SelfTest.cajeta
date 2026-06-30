@@ -15,6 +15,8 @@ import dev.cajeta.unit.InOrder;
 import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.selftest.inject.Service;
 import dev.cajeta.unit.selftest.doubles.Coin;
+import dev.cajeta.unit.selftest.doubles.Gateway;
+import dev.cajeta.unit.selftest.doubles.MockGateway;
 import cajeta.lang.Int64;
 import cajeta.error.RecoverableException;
 
@@ -321,6 +323,24 @@ public class SelfTest {
             Assert.assertThrows(() -> {
                 bad.verify(eng, "open");
             });
+        });
+
+        t.test("hand-written mock subclass: stub + verify through the real type", () -> {
+            MockGateway gw = heap MockGateway();
+            Mock.when(gw.engine, "charge").thenReturn(#(heap Coin(50)));
+
+            // Exercise through the production base type — proves virtual dispatch
+            // reaches the mock's override (the parse-order vtable check).
+            Gateway g = gw;
+            Coin c = g.charge(1999);
+            Assert.that(c.cents).isEqualTo(50);
+            g.refund(1999);
+
+            MockVerify.times(gw.engine, "charge", 1);
+            MockVerify.once(gw.engine, "refund");
+            Matcher[] m = { ArgMatchers.eqInt(1999) };
+            MockVerify.timesWith(gw.engine, "charge", #m, 1);
+            Assert.that(((Int64) gw.engine.lastArgOf("charge", 0)).value()).isEqualTo(1999);
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

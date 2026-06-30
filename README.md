@@ -81,6 +81,11 @@ fails the build:
 
 - **[docs/unit-tour.md](docs/unit-tour.md)** — a hands-on tour: writing tests,
   every assertion, the runner, and wiring the build.
+- **[docs/mockito-aot.md](docs/mockito-aot.md)** — Mockito-style mocks (AoT):
+  `when/thenReturn/thenThrow`, argument matchers, `verify` (`times/atLeast/...`),
+  argument capture, and in-order verification over a hand-written mock + engine.
+- **[docs/test-doubles.md](docs/test-doubles.md)** — record-only `CallLog`/`Verify`
+  doubles and the `@Inject` override (`TestContext`).
 - **[docs/unit-spec.md](docs/unit-spec.md)** — the full design and the
   best-of-breed comparison (JUnit 5 / AssertJ / pytest / gomock / Spring Test).
 - **[plan/unit-plan.md](plan/unit-plan.md)** — the roadmap and what each phase ships.
@@ -92,9 +97,14 @@ cajeta-unit tests itself: a bootstrap proves the assertion engine detects both
 passing *and* failing checks before the engine is used to test the rest of the
 framework (see `dev.cajeta.unit.selftest`).
 
-Roadmap (see the plan): annotation-driven `@Test` discovery, `@Component`/
-`@TestComponent` test contexts, and compile-time **mocks/fakes/spies/stubs**.
-These are designed in the spec and staged behind the v1 assertion core.
+Since then: annotation-driven `@Test` discovery (v0.3) and a **Mockito-style
+AoT mock engine** (v0.4) — `when/thenReturn/thenThrow`, argument matchers,
+`verify` (`times/atLeast/atMost`), argument capture, and in-order verification
+over hand-written mocks (see [docs/mockito-aot.md](docs/mockito-aot.md)).
+
+Roadmap (see the plan): auto-generated `@Mock` subclasses (needs a compiler
+codegen hook), spies, environment fakes (`FakeClock`, in-memory repos),
+`@BeforeAll`/`@AfterAll`/`@Tag`, and JUnit-XML / TAP reporters.
 
 ## License
 

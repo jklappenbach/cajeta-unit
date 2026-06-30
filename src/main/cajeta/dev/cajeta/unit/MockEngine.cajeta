@@ -9,7 +9,8 @@ import cajeta.collection.ArrayList;
  *
  * ```cajeta
  * public class MockGateway extends PaymentGateway {
- *     public MockEngine engine = heap MockEngine();
+ *     public MockEngine engine;
+ *     public MockGateway() { this.engine = heap MockEngine(); }
  *     public Receipt charge(int64 amount) {
  *         Object[] a = { Int64.of(amount) };
  *         this.engine.recordCall("charge", #a);

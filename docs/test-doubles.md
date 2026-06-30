@@ -70,9 +70,21 @@ fake clock). No verification machinery needed: assert on its observable state
 with `Assert` directly. This is the model for cloud-service fakes
 (`cloud-fakes.md`) — fake the **port**, not the SDK.
 
+## Mockito-style mocks (v0.4)
+
+Beyond record-only `CallLog`/`Verify`, cajeta-unit now ships a full **AoT
+Mockito surface** — `when(...).thenReturn/thenThrow`, argument matchers,
+`verify` with `times/atLeast/atMost`, argument capture, and in-order checks —
+built on a hand-written mock + `MockEngine` (no runtime proxy). See
+[`mockito-aot.md`](mockito-aot.md). Use `CallLog`/`Verify` for the simplest
+record-and-check doubles; reach for `MockEngine`/`Mock`/`MockVerify` when you
+need stubbed return values, argument matching, or call-order assertions.
+
 ## What's NOT yet implemented
 
-- Codegen `@Mock` (Mockito-style auto-mocks) — doubles are hand-written.
-- `@Test` discovery — tests are registered explicitly on `TestRunner`.
-- Argument matching / stubbed return programming on `CallLog` (record-only v1).
+- Codegen `@Mock` (auto-generated mock subclasses) — mocks are hand-written
+  (the engine they forward to is shipped).
+- `thenAnswer` (dynamic callback), spies (partial mocks), and a `getAllValues()`
+  captor list — see the matrix in [`mockito-aot.md`](mockito-aot.md).
+- Argument matching / stubbed returns on `CallLog` itself (use `MockEngine`).
 - Interface-typed `@Inject` override.

@@ -118,9 +118,10 @@ args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
       `verifyWith(engine, name, #Matcher[])` via a monotonic cursor (state is just
       the int cursor; engine passed per call). Per-engine ordering (cross-engine
       deferred). Self-tested incl. out-of-order failure (18 green).
-- [ ] **4a.7 Docs** — `docs/mockito-aot.md` (the engine, the hand-written-mock
-      recipe, the matrix of what AoT supports vs. Mockito); update `test-doubles.md`
-      "what's NOT implemented", README status, spec §5.
+- [x] **4a.7 Docs** — `docs/mockito-aot.md` (recipe + API + AoT-vs-Mockito matrix
+      + ownership notes); updated `test-doubles.md`, README, spec §5. End-to-end
+      hand-written `MockGateway` (subclass dispatched via base type: stub + verify
+      + capture) self-tested (19 green).
 
 ### Phase 6 — samples/tour project (`samples/`) — **ACTIVE (targeting v0.4)**
 
