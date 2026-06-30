@@ -6,7 +6,9 @@ import dev.cajeta.unit.TestRunner;
 import dev.cajeta.unit.Runner;
 import dev.cajeta.unit.CallLog;
 import dev.cajeta.unit.Verify;
+import dev.cajeta.unit.ArgMatchers;
 import dev.cajeta.unit.selftest.inject.Service;
+import cajeta.lang.Int64;
 
 /**
  * cajeta-unit's own test suite — the framework, tested with itself.
@@ -150,6 +152,25 @@ public class SelfTest {
             Verify.received(log, "save");
             Verify.receivedTimes(log, "save", 2);
             Verify.neverReceived(log, "delete");
+        });
+
+        t.test("matchers: any / eqInt / isNull / notNull / argThat", () -> {
+            Assert.isTrue(ArgMatchers.any().matches(Int64.of(5)));
+            Assert.isTrue(ArgMatchers.any().matches(null));
+            Assert.isTrue(ArgMatchers.eqInt(1999).matches(Int64.of(1999)));
+            Assert.isFalse(ArgMatchers.eqInt(1999).matches(Int64.of(2000)));
+            Assert.isTrue(ArgMatchers.isNull().matches(null));
+            Assert.isFalse(ArgMatchers.isNull().matches(Int64.of(1)));
+            Assert.isTrue(ArgMatchers.notNull().matches(Int64.of(1)));
+            Assert.isFalse(ArgMatchers.notNull().matches(null));
+            Assert.isTrue(ArgMatchers.argThat((Object o) -> {
+                Int64 i = (Int64) o;
+                return i.value() > 10;
+            }).matches(Int64.of(50)));
+            Assert.isFalse(ArgMatchers.argThat((Object o) -> {
+                Int64 i = (Int64) o;
+                return i.value() > 10;
+            }).matches(Int64.of(5)));
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

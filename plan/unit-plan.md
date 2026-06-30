@@ -71,6 +71,64 @@ _Execution plan for `docs/unit-spec.md`. Library project (`.cja`), scaffolded fr
 - [ ] **Spies**: aspect-interception (`@Around`, shipped) first; generated-subclass spies
       later.
 
+### Phase 4a — Mockito-AoT doubles engine — **ACTIVE (targeting v0.4)**
+
+_The user-requested "more Mockito features, AoT mechanism." No runtime proxy:
+hand-written mocks subclass the target, hold a `MockEngine`, box each call's args
+into an `Object[]`, record it, and (for non-void) `return (T) engine.answer(name,
+args)`. The Mockito *surface* (`when/thenReturn/verify/matchers`) over an AoT
+*engine* (ordinary monomorphized library code)._
+
+> **Compiler feasibility — empirically probed 2026-06-30 (cajeta 0.7.1), see the
+> `cajeta-two-object-generic-constraints` memory.** Feasible with care:
+> box via `Int64.of(x)` (value-`hash()` → `eq` works); `Object[]` only as a
+> local (never inline as a call arg); matchers are `boolean`-returning interfaces
+> over `Object`; downcast `Object`→user/box/String is fine. **Discipline:** store
+> owned values into `Object` fields with `#` transfer (`#v`) or they use-after-free;
+> never use `instanceof` (false on boxes); never a func-field returning `Object`
+> (IR-verify failure) — use an `Answer` interface.
+
+- [x] **4a.1 Matchers** — `Matcher` **base class** (`boolean matches(Object)`;
+      interface crashes from a `#`-factory, so it's a class) + `ArgMatchers`:
+      `any()`, `eq(#Object)`, `eqInt(int64)`, `isNull()`, `notNull()`,
+      `argThat((Object)->boolean)`. Self-tested (`SelfTest.run`, 12 green).
+- [ ] **4a.2 MockEngine + Invocation** — `Invocation(name, Object[] args)`;
+      `MockEngine.record(name, args)`, invocation list, `callCount(name)`,
+      `invocations(name)`, arg access. Self-test.
+- [ ] **4a.3 Stubbing** — `Mock.when(engine, name)` → `Stubbing` with
+      `.with(Matcher[])`, `.thenReturn(Object)` (consecutive), `.thenThrow(Throwable)`;
+      `engine.answer(name, args)` resolves first matching rule (else default/null).
+      Mock body downcasts the `Object` result. Self-test round-trip (user type + box).
+- [ ] **4a.4 Rich verification** — `MockVerify.on(engine, name)` →
+      `.with(Matcher[])` then `.times(n)/once()/never()/atLeast(n)/atMost(n)`; each
+      fails via `Assert.fail` with a high-signal message. Keep `CallLog`/`Verify`
+      (name-only) intact. Self-test.
+- [ ] **4a.5 ArgumentCaptor** — capture the nth arg of matched invocations
+      (`values()`, `value()` = last). Self-test.
+- [ ] **4a.6 InOrder** — `Mock.inOrder()`; ordered `verify(engine, name[, matchers])`
+      across one or more engines via a monotonic cursor. Self-test.
+- [ ] **4a.7 Docs** — `docs/mockito-aot.md` (the engine, the hand-written-mock
+      recipe, the matrix of what AoT supports vs. Mockito); update `test-doubles.md`
+      "what's NOT implemented", README status, spec §5.
+
+### Phase 6 — samples/tour project (`samples/`) — **ACTIVE (targeting v0.4)**
+
+_User-requested: a tour like `cajeta/samples/tour` — a build-tool app whose demo
+packages mirror cajeta-unit's packages/classes. Each demo extends `DemoClass` and
+overrides `execute()`; `Tour.main` walks a `demos[]` array._
+
+- [ ] **6.1 Scaffold** — `samples/tour/cajeta.json` (binary archetype, entry
+      `tour.Tour::main`, depends on the built `dev.cajeta.unit` `.cja` via
+      `--classpath`), `DemoClass` base, `Tour` entry, `build.sh`/`run.sh`, `.gitignore`.
+      Builds + runs green.
+- [ ] **6.2 Demo packages mirroring unit** — `tour.assertions` (Assert fluent +
+      classic), `tour.discovery` (`@Test`/lifecycle + `Runner`), `tour.doubles`
+      (CallLog/Verify hand-written mock), `tour.matchers`, `tour.stubbing`,
+      `tour.verify`, `tour.captor`, `tour.inorder`, `tour.inject` (TestContext).
+      One demo class per unit capability; all run from `Tour.main`.
+- [ ] **6.3 README** — `samples/tour/README.md` mapping each demo → the unit
+      package/class it showcases (mirrors the cajeta tour README shape).
+
 ### Phase 5 — parameterization & polish
 - [ ] `@ParameterizedTest` + `@ValueSource/@MethodSource/@CsvSource`.
 - [ ] Fixture-as-injection (pytest-style) mapped to `@Component`.

@@ -1,0 +1,31 @@
+package dev.cajeta.unit;
+
+/**
+ * An argument matcher — the predicate side of Mockito-style stubbing and
+ * verification. A matcher answers "does this recorded argument satisfy me?"
+ * against a single argument boxed as an `Object`.
+ *
+ * Matchers are the AoT analogue of Mockito's `any()/eq()/argThat()`: there is no
+ * runtime proxy, so a hand-written mock boxes each argument into an `Object[]`
+ * and the engine matches stub/verify rules against those boxes. Build matchers
+ * with {@Link ArgMatchers}; an empty matcher set means "match any arguments".
+ *
+ * Implementations must not rely on `instanceof` (unreliable on boxed primitives
+ * in the current toolchain) — compare via `Object` equality (which dispatches
+ * the value-based `hash()` of box types) or a downcast inside an `argThat`
+ * predicate.
+ *
+ * `Matcher` is a **base class**, not an interface, on purpose: a factory that
+ * returns an *interface* type by ownership transfer (`#`) and dispatches through
+ * it produces a bad vtable pointer in the current toolchain (interface
+ * fat-pointer instantiation is still maturing). A base class with virtual
+ * `matches(...)` — the same shape as the tour's `DemoClass` — dispatches
+ * correctly, including from a `#`-returning factory and through a `Matcher[]`.
+ * The default `matches(...)` returns false; every real matcher overrides it.
+ */
+public class Matcher {
+    /** Whether `arg` (a boxed argument, possibly null) satisfies this matcher. */
+    public boolean matches(Object arg) {
+        return false;
+    }
+}
