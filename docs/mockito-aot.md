@@ -39,6 +39,16 @@ public class MockGateway extends Gateway {
 }
 ```
 
+**Return `handle(...)`'s result inline — never bind it to an owned local.** The
+engine hands back a *borrow* of the `StubRule`'s value; assigning it to a typed
+class local (`Coin c = (Coin) engine.handle(...)`) makes the local *own* it, so
+it is freed at scope exit and the **next** call to that stub reads freed memory.
+`return (Coin) engine.handle(...)` (above) is correct — the rule keeps ownership
+and the caller borrows the result. To return a primitive, extract it inline:
+`return ((Int64) engine.handle("send", #a)).value();`. A consequence: a
+value-returning mock method must be **stubbed before it is called** (an unstubbed
+call answers `null`, and there is no safe inline null-check).
+
 ## Stubbing — `Mock.when(...)`
 
 ```cajeta
@@ -140,6 +150,12 @@ recorded alongside this work):
 - `Matcher` is a base class (not an interface), and its subclasses live in the
   same file — interface dispatch from a `#`-factory and cross-file base/subclass
   parse order both miscompile virtual dispatch otherwise.
+- Return `handle(...)` inline (see the recipe) — an owned local frees the stub's
+  value before the next call.
+- `thenThrow` works when the throw is caught **within the same binary**. Catching
+  an exception thrown inside a *linked `.cja`* from a consumer currently crashes
+  in the toolchain, so don't rely on `thenThrow` across a `.cja` boundary yet
+  (`.cja`-internal `assertThrows`/`thenThrow`, as in the self-tests, is fine).
 
 See [`test-doubles.md`](test-doubles.md) for the simpler record-only
 `CallLog`/`Verify` doubles and the `@Inject` override (`TestContext`).

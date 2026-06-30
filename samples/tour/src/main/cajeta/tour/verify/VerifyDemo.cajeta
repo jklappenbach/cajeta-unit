@@ -1,0 +1,39 @@
+package tour.verify;
+
+import tour.DemoClass;
+import tour.doubles.MockMailer;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Matcher;
+import dev.cajeta.unit.ArgMatchers;
+import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.MockVerify;
+import cajeta.lang.Int64;
+
+// Showcases verification — dev.cajeta.unit.MockVerify: times / once / never /
+// atLeast / atMost, plus argument-matched counts (timesWith).
+public class VerifyDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Verification: MockVerify --");
+
+        MockMailer mailer = heap MockMailer();
+        Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
+        mailer.send("alice");
+        mailer.send("alice");
+        mailer.send("bob");
+        mailer.close();
+
+        MockVerify.times(mailer.engine, "send", 3);
+        MockVerify.once(mailer.engine, "close");
+        MockVerify.never(mailer.engine, "open");
+        MockVerify.atLeast(mailer.engine, "send", 2);
+        MockVerify.atMost(mailer.engine, "send", 3);
+
+        Matcher[] toAlice = { ArgMatchers.eq(#("alice")) };
+        MockVerify.timesWith(mailer.engine, "send", #toAlice, 2);
+
+        Assert.that(MockVerify.count(mailer.engine, "send")).isEqualTo(3);
+
+        System.stdout.println("  verified: 3x send, 1x close, never open, 2x send(\"alice\")");
+    }
+}

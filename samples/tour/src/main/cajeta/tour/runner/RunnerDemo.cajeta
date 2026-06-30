@@ -1,0 +1,30 @@
+package tour.runner;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.TestRunner;
+
+// Showcases the runner + reporter — dev.cajeta.unit.TestRunner: register named
+// tests, run them inside try/catch, and print a pass/fail/skip report with an
+// exit code. (cajeta-unit also discovers @Test methods reflectively via
+// Runner.runAll() — see docs/discovery.md; this demo uses explicit registration
+// so it is self-contained inside the tour.)
+public class RunnerDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Runner + reporter: TestRunner --");
+
+        TestRunner runner = heap TestRunner();
+        runner.test("addition works", () -> {
+            Assert.that(2 + 2).isEqualTo(4);
+        });
+        runner.test("string length", () -> {
+            Assert.that("hi").hasLength(2);
+        });
+        runner.skip("pending feature", "demonstrates skip");
+
+        int32 rc = runner.summary();
+        Assert.that(rc).isEqualTo(0);
+        System.stdout.println("  runner exit code = " + rc + " (0 = all green)");
+    }
+}

@@ -334,13 +334,18 @@ public class SelfTest {
             Gateway g = gw;
             Coin c = g.charge(1999);
             Assert.that(c.cents).isEqualTo(50);
+            // Call the stubbed value-returning method again: the mock returns
+            // engine.handle(...) inline, so the StubRule keeps ownership of the
+            // answer across calls (binding it to an owned local would free it).
+            Coin c2 = g.charge(2000);
+            Assert.that(c2.cents).isEqualTo(50);
             g.refund(1999);
 
-            MockVerify.times(gw.engine, "charge", 1);
+            MockVerify.times(gw.engine, "charge", 2);
             MockVerify.once(gw.engine, "refund");
             Matcher[] m = { ArgMatchers.eqInt(1999) };
             MockVerify.timesWith(gw.engine, "charge", #m, 1);
-            Assert.that(((Int64) gw.engine.lastArgOf("charge", 0)).value()).isEqualTo(1999);
+            Assert.that(((Int64) gw.engine.lastArgOf("charge", 0)).value()).isEqualTo(2000);
         });
 
         t.skip("a deliberately skipped test", "demonstrates skip");

@@ -1,0 +1,14 @@
+package tour.doubles;
+
+// A production-style collaborator the tour mocks by hand. `send` returns a
+// message id (a stubbable non-void method); `close` is void (the record-only
+// path). Defined before MockMailer (file name sorts first) so the base is
+// concrete when the subclass parses.
+public class Mailer {
+    public int64 send(String to) {
+        return 0;
+    }
+
+    public void close() {
+    }
+}

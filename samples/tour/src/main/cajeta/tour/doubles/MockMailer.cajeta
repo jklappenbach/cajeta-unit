@@ -1,0 +1,30 @@
+package tour.doubles;
+
+import dev.cajeta.unit.MockEngine;
+import cajeta.lang.Int64;
+
+// A hand-written mock of Mailer — the canonical AoT recipe: subclass the real
+// type, hold a MockEngine, and forward each call. `send` boxes its arg, calls
+// engine.handle, and unboxes the stubbed id (or -1 if unstubbed); `close`
+// records and ignores the answer. Used by the stubbing / verify / capture /
+// in-order demos.
+public class MockMailer extends Mailer {
+    public MockEngine engine;
+
+    public MockMailer() {
+        this.engine = heap MockEngine();
+    }
+
+    public int64 send(String to) {
+        // Extract the stubbed answer inline — binding handle()'s result to an
+        // owned local would drop (free) the StubRule's value, breaking the next
+        // call. (send must be stubbed; an unstubbed call answers null.)
+        Object[] a = { to };
+        return ((Int64) this.engine.handle("send", #a)).value();
+    }
+
+    public void close() {
+        Object[] a = { };
+        this.engine.handle("close", #a);
+    }
+}

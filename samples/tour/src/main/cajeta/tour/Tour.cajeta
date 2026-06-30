@@ -3,7 +3,13 @@ package tour;
 import cajeta.collection.ArrayList;
 
 import tour.assertions.*;
+import tour.runner.*;
+import tour.doubles.*;
 import tour.matchers.*;
+import tour.stubbing.*;
+import tour.verify.*;
+import tour.capture.*;
+import tour.inorder.*;
 
 // cajeta-unit tour. Each demo class (one per unit capability) extends
 // DemoClass and overrides execute(); this entry point puts one instance of
@@ -20,7 +26,13 @@ public final class Tour {
 
         ArrayList<DemoClass> demos = heap ArrayList<DemoClass>();
         demos.add(heap AssertionsDemo());
+        demos.add(heap RunnerDemo());
+        demos.add(heap DoublesDemo());
         demos.add(heap MatchersDemo());
+        demos.add(heap StubbingDemo());
+        demos.add(heap VerifyDemo());
+        demos.add(heap CaptureDemo());
+        demos.add(heap InOrderDemo());
 
         int32 i = 0;
         int32 n = (int32) demos.count();

@@ -1,0 +1,35 @@
+package tour.stubbing;
+
+import tour.DemoClass;
+import tour.doubles.MockMailer;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Mock;
+import cajeta.lang.Int64;
+
+// Showcases stubbing — dev.cajeta.unit.Mock.when(...).thenReturn, including
+// consecutive return values (the last repeats once exhausted).
+//
+// thenThrow is also supported (see the framework self-tests and
+// docs/mockito-aot.md), but it is NOT demonstrated here: it requires catching
+// the thrown exception, and catching an exception thrown *inside the linked
+// dev.cajeta.unit .cja* from this consumer crashes in the current toolchain
+// (.cja-internal throw+catch — e.g. Assert.assertThrows above — works fine).
+public class StubbingDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Stubbing: Mock.when().thenReturn --");
+
+        MockMailer mailer = heap MockMailer();
+        Mock.when(mailer.engine, "send")
+            .thenReturn(#Int64.of(1001))
+            .thenReturn(#Int64.of(1002));
+
+        int64 id1 = mailer.send("alice");   // 1001
+        int64 id2 = mailer.send("bob");     // 1002
+        int64 id3 = mailer.send("carol");   // 1002 (last repeats)
+        Assert.that(id1).isEqualTo(1001);
+        Assert.that(id2).isEqualTo(1002);
+        Assert.that(id3).isEqualTo(1002);
+        System.stdout.println("  consecutive thenReturn ids: " + id1 + ", " + id2 + ", " + id3);
+    }
+}

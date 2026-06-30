@@ -135,11 +135,15 @@ overrides `execute()`; `Tour.main` walks a `demos[]` array._
       against it via `--classpath` — manifest classpath isn't shipped), `.gitignore`.
       Builds + runs green (assertions + matchers demos). Consumer linking the `.cja`
       verified.
-- [ ] **6.2 Demo packages mirroring unit** — `tour.assertions` (Assert fluent +
-      classic), `tour.discovery` (`@Test`/lifecycle + `Runner`), `tour.doubles`
-      (CallLog/Verify hand-written mock), `tour.matchers`, `tour.stubbing`,
-      `tour.verify`, `tour.captor`, `tour.inorder`, `tour.inject` (TestContext).
-      One demo class per unit capability; all run from `Tour.main`.
+- [x] **6.2 Demo packages mirroring unit** — `tour.assertions`, `tour.runner`
+      (TestRunner), `tour.doubles` (CallLog/Verify + shared `Mailer`/`MockMailer`),
+      `tour.matchers`, `tour.stubbing`, `tour.verify`, `tour.capture`,
+      `tour.inorder`. All 8 demos run green from `Tour.main`. Surfaced + fixed two
+      consumer-side toolchain limits (recorded in memory + mockito-aot.md): bind
+      `handle()` inline (owned local frees the stub value), and cross-`.cja`
+      exception catch crashes (so `thenThrow`/inject deferred from the tour).
+      Added a multi-call stubbed-return regression to the framework self-test.
+      (`tour.inject`/TestContext deferred — needs `--profile=test`.)
 - [ ] **6.3 README** — `samples/tour/README.md` mapping each demo → the unit
       package/class it showcases (mirrors the cajeta tour README shape).
 

@@ -1,0 +1,30 @@
+package tour.capture;
+
+import tour.DemoClass;
+import tour.doubles.MockMailer;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Mock;
+import cajeta.lang.Int64;
+
+// Showcases argument capture — read the actual arguments a mock received via
+// MockEngine.argOf / lastArgOf and assert on them.
+public class CaptureDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Argument capture: engine.argOf / lastArgOf --");
+
+        MockMailer mailer = heap MockMailer();
+        Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
+        mailer.send("alice@example.com");
+        mailer.send("bob@example.com");
+
+        String first = (String) mailer.engine.argOf("send", 0, 0);
+        String last = (String) mailer.engine.lastArgOf("send", 0);
+
+        Assert.that(first).isEqualTo("alice@example.com");
+        Assert.that(last).isEqualTo("bob@example.com");
+
+        System.stdout.println("  first send to = " + first);
+        System.stdout.println("  last  send to = " + last);
+    }
+}

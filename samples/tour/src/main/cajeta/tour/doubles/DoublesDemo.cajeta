@@ -1,0 +1,31 @@
+package tour.doubles;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.CallLog;
+import dev.cajeta.unit.Verify;
+
+// Showcases the simplest doubles — dev.cajeta.unit.CallLog + Verify: record
+// method invocations by name and assert what was called. (For stubbed returns,
+// argument matching, capture, and order, see the stubbing/verify/capture/inorder
+// demos, which use MockEngine.)
+public class DoublesDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- Test doubles: CallLog + Verify --");
+
+        CallLog log = heap CallLog();
+        log.track("send");
+        log.track("send");
+        log.track("retry");
+
+        Verify.received(log, "send");
+        Verify.receivedTimes(log, "send", 2);
+        Verify.neverReceived(log, "delete");
+
+        Assert.that(log.count("send")).isEqualTo(2);
+        Assert.that(log.total()).isEqualTo(3);
+
+        System.stdout.println("  recorded 2x send + 1x retry; verified received / receivedTimes / neverReceived");
+    }
+}

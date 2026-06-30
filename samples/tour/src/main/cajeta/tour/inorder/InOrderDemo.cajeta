@@ -1,0 +1,34 @@
+package tour.inorder;
+
+import tour.DemoClass;
+import tour.doubles.MockMailer;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.InOrder;
+import cajeta.lang.Int64;
+
+// Showcases in-order verification — dev.cajeta.unit.InOrder: assert calls
+// happened in sequence, not merely that they happened.
+public class InOrderDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- In-order verification: InOrder --");
+
+        MockMailer mailer = heap MockMailer();
+        Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
+        mailer.send("alice");
+        mailer.close();
+
+        InOrder order = heap InOrder();
+        order.verify(mailer.engine, "send");
+        order.verify(mailer.engine, "close");
+        System.stdout.println("  verified send happened before close");
+
+        // The reverse order is rejected: verifying send *after* close would
+        // throw an AssertionFailure (a later call appearing before the cursor).
+        // We don't catch it here — catching an exception thrown inside the
+        // linked .cja from this consumer crashes in the current toolchain — but
+        // the framework self-tests cover the out-of-order failure path.
+        Assert.isTrue(mailer.engine.callCount("send") == 1);
+    }
+}
