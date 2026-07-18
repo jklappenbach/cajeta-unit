@@ -120,7 +120,7 @@ public class MockEngine {
     }
 
     /** The `nth` (0-based) recorded call to `method`, or null if there are fewer. */
-    public Invocation invocationOf(String method, int32 nth) {
+    public #Invocation invocationOf(String method, int32 nth) {
         int32 seen = 0;
         int32 i = 0;
         int32 c = (int32) this.calls.count();
