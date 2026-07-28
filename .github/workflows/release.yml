@@ -21,4 +21,9 @@ jobs:
       # `@Disabled`) nor the bracket array literals these sources have used since
       # the collection-literals migration.
       cajeta-version: v0.10.1
+      # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
+      # hand-verifies the engine before trusting it, then runs the reflective
+      # @Test suite through the now-trusted engine — you cannot test a test
+      # framework with itself unbootstrapped.
+      test-command: cajeta test
     secrets: inherit
