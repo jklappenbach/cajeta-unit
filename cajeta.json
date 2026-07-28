@@ -1,19 +1,25 @@
 {
-    // Library starter — what `cajeta init library` writes.
+    // cajeta-unit — the test framework the Cajeta ecosystem is tested with:
+    // reflective `@Test` discovery, `@BeforeEach` / `@AfterEach` / `@Disabled`,
+    // fluent assertions, and a mocking engine (stubbing, argument matchers,
+    // call verification).
     //
-    // A LIBRARY project has NO `main` / no `entry-method`: it compiles to a
-    // reusable `.cja` archive that other projects depend on (via
-    // settings.dependencies), rather than a native executable. The only
-    // structural difference from the `basic` (binary) archetype is the
-    // absence of `settings.build.entry-method` — with no entry point the
-    // build action emits a `.cja` library instead of an exe.
+    // A LIBRARY project: no `entry-method`, so the build emits a reusable `.cja`
+    // rather than an executable. Consumers put that archive on the classpath of
+    // their test binary and let `dev.cajeta.unit.Runner` discover their tests.
+    //
+    // VERSIONING — `details.version` is the SINGLE source of truth. It names the
+    // built archive (`dev.cajeta.unit-<version>.cja`), it is what CI publishes to
+    // Olla, and CI asserts that a `v*` tag agrees with it. There is deliberately
+    // no VERSION file: cajeta-codec kept one alongside its manifest, the two
+    // drifted, and a 0.7.1 cut shipped as a 0.7.0 artifact.
 
     "details": {
         "name":               "dev.cajeta.unit",
-        "version":            "0.1.0",
-        "description":        "cajeta-unit — unit library",
+        "version":            "0.2.0",
+        "description":        "cajeta-unit — test framework: @Test discovery, assertions, and mocks",
         "license":            "Apache-2.0",
-        "authors":            ["sample"],
+        "authors":            ["Julian Klappenbach"],
         "cajeta-lang-version": "1.0"
     },
 
@@ -29,10 +35,12 @@
         // into a consumer's binary (dead-code elimination).
         "dependencies": {},
 
-        // Test-only dependencies — not shipped in the published .cja.
-        "dev-dependencies": {
-            "cajeta.testkit": "1.0.*"
-        },
+        // No dev-dependencies: this project IS the test framework, and it tests
+        // itself with itself (`SelfTest` hand-verifies the engine before trusting
+        // it, then runs the reflective suite). The starter template's placeholder
+        // `cajeta.testkit: 1.0.*` was carried here unedited and names a package
+        // that does not exist in any repository.
+        "dev-dependencies": {},
 
         "repositories": [
             { "name": "central", "url": "https://olla.cajeta.dev",
