@@ -29,7 +29,7 @@ public class VerifyDemo extends DemoClass {
         MockVerify.atLeast(mailer.engine, "send", 2);
         MockVerify.atMost(mailer.engine, "send", 3);
 
-        Matcher[] toAlice = { ArgMatchers.eq(#("alice")) };
+        Matcher[] toAlice = [ ArgMatchers.eq(#("alice")) ];
         MockVerify.timesWith(mailer.engine, "send", #toAlice, 2);
 
         Assert.that(MockVerify.count(mailer.engine, "send")).isEqualTo(3);

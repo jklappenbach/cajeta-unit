@@ -9,7 +9,7 @@ import cajeta.error.RecoverableException;
  *
  * ```cajeta
  * Mock.when(gateway.engine, "charge").thenReturn(#Int64.of(0));          // any args
- * Matcher[] m = { ArgMatchers.eqInt(1999) };
+ * Matcher[] m = [ ArgMatchers.eqInt(1999) ];
  * Mock.when(gateway.engine, "charge").withArgs(#m).thenReturn(#receipt); // matched args
  * Mock.when(gateway.engine, "charge").thenThrow(#(heap DeclineError("no funds")));
  * ```

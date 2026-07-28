@@ -8,7 +8,7 @@ package dev.cajeta.unit;
  * A hand-written mock builds the argument array and records it:
  * ```cajeta
  * public Receipt charge(int64 amount) {
- *     Object[] a = { Int64.of(amount) };
+ *     Object[] a = [ Int64.of(amount) ];
  *     this.engine.recordCall("charge", #a);
  *     return (Receipt) this.engine.answer("charge", a);
  * }

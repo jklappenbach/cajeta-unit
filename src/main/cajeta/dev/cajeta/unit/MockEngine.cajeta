@@ -12,7 +12,7 @@ import cajeta.collection.ArrayList;
  *     public MockEngine engine;
  *     public MockGateway() { this.engine = heap MockEngine(); }
  *     public Receipt charge(int64 amount) {
- *         Object[] a = { Int64.of(amount) };
+ *         Object[] a = [ Int64.of(amount) ];
  *         this.engine.recordCall("charge", #a);
  *         return (Receipt) this.engine.answer("charge", a);
  *     }

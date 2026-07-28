@@ -9,7 +9,7 @@ package dev.cajeta.unit;
  * MockVerify.never(gateway.engine, "refund");
  * MockVerify.atLeast(gateway.engine, "retry", 2);
  *
- * Matcher[] m = { ArgMatchers.eqInt(1999) };
+ * Matcher[] m = [ ArgMatchers.eqInt(1999) ];
  * MockVerify.timesWith(gateway.engine, "charge", #m, 1);     // argument-matched count
  * ```
  *

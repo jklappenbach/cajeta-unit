@@ -19,12 +19,12 @@ public class MockMailer extends Mailer {
         // Extract the stubbed answer inline — binding handle()'s result to an
         // owned local would drop (free) the StubRule's value, breaking the next
         // call. (send must be stubbed; an unstubbed call answers null.)
-        Object[] a = { to };
+        Object[] a = [ to ];
         return ((Int64) this.engine.handle("send", #a)).value();
     }
 
     public void close() {
-        Object[] a = { };
+        Object[] a = [ ];
         this.engine.handle("close", #a);
     }
 }

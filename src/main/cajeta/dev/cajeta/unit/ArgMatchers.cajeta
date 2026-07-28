@@ -7,7 +7,7 @@ import cajeta.lang.Int64;
  * methods (`any()`, `eq(...)`, `argThat(...)`).
  *
  * ```cajeta
- * Matcher[] expected = { ArgMatchers.eqInt(1999) };
+ * Matcher[] expected = [ ArgMatchers.eqInt(1999) ];
  * MockVerify.on(gateway.engine, "charge").withArgs(#expected).times(1);
  * ```
  *
