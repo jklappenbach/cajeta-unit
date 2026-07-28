@@ -9,9 +9,16 @@ on:
 permissions:
   contents: write
 
-# Builds the library .cja on every PR; on a v* tag also publishes a GitHub
+# Builds the library .cja on a main push; on a v* tag also publishes a GitHub
 # Release and a signed publish to Olla. Logic lives in the reusable workflow.
 jobs:
   release:
     uses: jklappenbach/cajeta/.github/workflows/lib-release.yml@main
+    with:
+      # Pin explicitly. Omitting this inherits the reusable workflow's default,
+      # which is how this repo silently built against v0.7.1 — a toolchain that
+      # parses neither the annotation declarations (`@Test`, `@BeforeEach`,
+      # `@Disabled`) nor the bracket array literals these sources have used since
+      # the collection-literals migration.
+      cajeta-version: v0.10.1
     secrets: inherit
