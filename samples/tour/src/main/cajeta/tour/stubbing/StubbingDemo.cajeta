@@ -2,34 +2,62 @@ package tour.stubbing;
 
 import tour.DemoClass;
 import tour.doubles.MockMailer;
+import tour.subject.SignupService;
 import dev.cajeta.unit.Assert;
 import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.Stubbing;
+import dev.cajeta.unit.Matcher;
+import dev.cajeta.unit.ArgMatchers;
 import cajeta.lang.Int64;
 
-// Showcases stubbing — dev.cajeta.unit.Mock.when(...).thenReturn, including
-// consecutive return values (the last repeats once exhausted).
+// Stubbing — Mock.when(engine, method) returns a Stubbing you program:
 //
-// thenThrow is also supported (see the framework self-tests and
-// docs/mockito-aot.md), but it is NOT demonstrated here: it requires catching
-// the thrown exception, and catching an exception thrown *inside the linked
-// dev.cajeta.unit .cja* from this consumer crashes in the current toolchain
-// (.cja-internal throw+catch — e.g. Assert.assertThrows above — works fine).
+//   .thenReturn(#value)          consecutive answers (last repeats)
+//   .withArgs(#matchers)         argument-matched rules — different answers
+//                                for different inputs, the matchers' payoff
+//
+// The mock stands in for the collaborator so the SUBJECT can be tested:
+// SignupService.signup must hand back whatever id the mailer assigned.
+//
+// thenThrow is also supported but not demonstrated: exercising it means
+// catching the thrown exception in this consumer binary, and catching an
+// exception thrown inside the linked .cja crashes today (cajeta INDEX:
+// cross-cja-exception-catch). When that lands, this demo grows:
+//   Mock.when(mailer.engine, "send").thenThrow(#heap SmtpDownException(...));
+//   try { svc.signup("x@y"); } catch (SmtpDownException e) { ... }
 public class StubbingDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
-        System.stdout.println("-- Stubbing: Mock.when().thenReturn --");
+        System.stdout.println("-- Stubbing: Mock.when().thenReturn / .withArgs --");
 
         MockMailer mailer = heap MockMailer();
+        SignupService svc = heap SignupService(mailer);
+
+        // Consecutive answers: the mail system assigns rising ids; the
+        // last programmed answer repeats once exhausted.
         Mock.when(mailer.engine, "send")
             .thenReturn(#Int64.of(1001))
             .thenReturn(#Int64.of(1002));
-
-        int64 id1 = mailer.send("alice");   // 1001
-        int64 id2 = mailer.send("bob");     // 1002
-        int64 id3 = mailer.send("carol");   // 1002 (last repeats)
+        int64 id1 = svc.signup("alice@example.com");   // 1001
+        int64 id2 = svc.signup("bob@example.com");     // 1002
+        int64 id3 = svc.signup("carol@example.com");   // 1002 (last repeats)
         Assert.that(id1).isEqualTo(1001);
         Assert.that(id2).isEqualTo(1002);
         Assert.that(id3).isEqualTo(1002);
-        System.stdout.println("  consecutive thenReturn ids: " + id1 + ", " + id2 + ", " + id3);
+        System.stdout.println("  signup ids from consecutive thenReturn: "
+            + id1 + ", " + id2 + ", " + id3);
+
+        // Argument-matched stubbing: a Stubbing is an ordinary value — bind
+        // it, refine it with withArgs. VIP signups get the priority queue's
+        // id range; everyone else keeps the default rule above.
+        Matcher[] vip = [ ArgMatchers.eq(#("vip@example.com")) ];
+        Stubbing vipRule = Mock.when(mailer.engine, "send");
+        vipRule.withArgs(#vip).thenReturn(#Int64.of(9001));
+        int64 vipId = svc.signup("vip@example.com");
+        int64 plain = svc.signup("dave@example.com");
+        Assert.that(vipId).isEqualTo(9001);
+        Assert.that(plain).isEqualTo(1002);
+        System.stdout.println("  withArgs routed vip -> " + vipId
+            + ", others -> " + plain);
     }
 }

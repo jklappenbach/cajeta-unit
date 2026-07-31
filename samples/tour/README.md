@@ -31,30 +31,42 @@ samples/tour/
     ├── Tour.cajeta              ← entry point — builds the demos[] array
     ├── DemoClass.cajeta         ← base class with virtual execute()
     ├── assertions/AssertionsDemo.cajeta
-    ├── runner/RunnerDemo.cajeta
-    ├── doubles/                 ← CallLog/Verify + the shared hand-written mock
+    ├── discovery/DiscoveryDemo.cajeta   ← @Test/@BeforeEach/@Disabled + Runner.runAll
+    ├── report/ReportDemo.cajeta         ← the failure report, exit code 1
+    ├── runner/RunnerDemo.cajeta         ← manual TestRunner registration (fallback API)
+    ├── subject/SignupService.cajeta     ← the component under test for the mock demos
+    ├── doubles/                 ← the hand-written doubles + their demo
     │   ├── DoublesDemo.cajeta
-    │   ├── Mailer.cajeta            ← a collaborator to mock
-    │   └── MockMailer.cajeta        ← the hand-written mock (the AoT recipe)
+    │   ├── Mailer.cajeta            ← the collaborator to mock
+    │   ├── MockMailer.cajeta        ← MockEngine-forwarding mock (the AoT recipe)
+    │   └── LoggingMailer.cajeta     ← CallLog-embedding mock (the simple recipe)
     ├── matchers/MatchersDemo.cajeta
     ├── stubbing/StubbingDemo.cajeta
     ├── verify/VerifyDemo.cajeta
     ├── capture/CaptureDemo.cajeta
-    └── inorder/InOrderDemo.cajeta
+    ├── inorder/InOrderDemo.cajeta
+    └── inject/InjectDemo.cajeta         ← TestContext + @Inject override (--profile=test)
 ```
 
 ## What each demo showcases
 
 | Demo | unit package / class | shows |
 |---|---|---|
-| `AssertionsDemo` | `Assert` | `that(...).isEqualTo/startsWith/...`, `thatFloat`, `isTrue/isFalse`, `assertThrows` |
-| `RunnerDemo` | `TestRunner` | register named tests, run them, print a pass/fail/skip report + exit code |
-| `DoublesDemo` | `CallLog`, `Verify` | record calls by name; `received` / `receivedTimes` / `neverReceived` |
-| `MatchersDemo` | `ArgMatchers`, `Matcher` | `any` / `eqInt` / `notNull` / `argThat` |
-| `StubbingDemo` | `Mock`, `MockEngine` | `Mock.when(...).thenReturn(...)` incl. consecutive returns |
-| `VerifyDemo` | `MockVerify` | `times` / `once` / `never` / `atLeast` / `atMost` + argument-matched `timesWith` |
-| `CaptureDemo` | `MockEngine.argOf` / `lastArgOf` | read the arguments a mock received |
-| `InOrderDemo` | `InOrder` | verify calls happened in sequence |
+| `AssertionsDemo` | `Assert` | fluent + classic assertions over a parsed order, `assertThrows` |
+| `DiscoveryDemo` | `Runner`, `@Test`/`@BeforeEach`/`@AfterEach`/`@Disabled` | reflective discovery over a real `CartTest`, with the fresh-instance/lifecycle contract PROVEN by counters |
+| `ReportDemo` | `TestRunner`, the subjects | a deliberately red test, its ✗ FAIL line, `summary() == 1`, `Assert.equals`, the full subject vocabulary |
+| `RunnerDemo` | `TestRunner` | the manual-registration fallback API |
+| `DoublesDemo` | `CallLog`, `Verify` | a CallLog-embedding mock driven THROUGH `SignupService`, plus `log.reset()` |
+| `MatchersDemo` | `ArgMatchers`, `Matcher` | the predicate vocabulary (`any`/`eq`/`eqInt`/`isNull`/`notNull`/`argThat`) — real roles live in stubbing/verify |
+| `StubbingDemo` | `Mock`, `Stubbing` | consecutive `thenReturn` + argument-routed `withArgs`, testing the service's behavior |
+| `VerifyDemo` | `MockVerify` | count + argument-matched verification (`timesWith`/`countWith`/`neverWith`) of what the service did |
+| `CaptureDemo` | `MockEngine`, `Invocation` | `argOf`/`lastArgOf`/`invocationOf`, `totalCalls`, `reset()` |
+| `InOrderDemo` | `InOrder` | sequence verification incl. argument-matched `verifyWith` over `inviteTeam` |
+| `InjectDemo` | `TestContext` | `bind`/`clear` overriding an `@Inject Clock` in the `--profile=test` build |
+
+Every mock demo tests `subject/SignupService` THROUGH the mock — stubbing and
+verification exist to test the component that uses the collaborator, not the
+mock itself.
 
 The `doubles/Mailer` + `MockMailer` pair is the canonical **hand-written mock
 recipe** (subclass the real type, hold a `MockEngine`, forward each call) — see
@@ -68,8 +80,18 @@ of current toolchain edges (documented in `docs/mockito-aot.md`):
 - A mock returns `engine.handle(...)` **inline**; binding it to an owned local
   would free the stub's value before the next call. A value-returning mock method
   must therefore be **stubbed before it is called**.
-- `thenThrow` and out-of-order `InOrder` failures throw *inside* the linked
-  `.cja`; catching such a throw from the consumer currently crashes, so those
-  failure paths are exercised by the framework self-tests rather than here.
-- `@Inject` / `TestContext` substitution needs a `--profile=test` build and is
-  covered in [`docs/test-doubles.md`](../../docs/test-doubles.md), not the tour.
+- `thenThrow`, out-of-order `InOrder` failures, and catching `AssertionFailure`
+  throw *inside* the linked `.cja`; catching such a throw from the consumer
+  currently crashes (cajeta INDEX: `cross-cja-exception-catch`). The gated
+  demos in StubbingDemo/InOrderDemo carry the ready-to-enable code.
+- Borrow-returning accessors (`MockEngine.invocationOf`, `handle`) must be
+  read INLINE — binding the borrow to a local registers a drop and frees the
+  engine's copy (see CaptureDemo's comment).
+- `@Inject` / `TestContext` substitution needs a `--profile=test` build —
+  `build.sh` passes it, and `inject/InjectDemo` covers `bind`/`clear`.
+
+Coverage is enforced: `scripts/check-library-tour-coverage.sh src/main/cajeta
+samples/tour scripts/tour-coverage-ignore.txt` requires every public type to be
+exercised (the ignore file exempts the framework's own selftest fixtures and
+the two cross-`.cja`-gated types, each with a stated reason). CI runs suite +
+tour + gate via `scripts/ci-checks.sh`.

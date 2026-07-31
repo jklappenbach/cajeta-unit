@@ -1,0 +1,113 @@
+package tour.discovery;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Runner;
+
+// @Test discovery — the PRIMARY idiom for writing tests with cajeta-unit:
+//
+//   annotate methods bare (@Test, @BeforeEach, @AfterEach, @Disabled —
+//   they canonicalize to package `code`, so idiomatic test code imports
+//   nothing for them), then Runner.runAll() finds and runs every @Test
+//   class in the binary reflectively.
+//
+// The behavioral contract, proven by CartTest's counters below:
+//   - FRESH INSTANCE per @Test: each test method runs on its own
+//     newly-constructed instance, so mutations never leak across tests.
+//   - @BeforeEach/@AfterEach bracket every test on that fresh instance.
+//   - @Disabled tests are reported as skipped, never constructed or run.
+//
+// The subject is a small Cart — the realistic shape a junior will copy.
+
+// support: the subject under test.
+class Cart {
+    public int64 subtotal;
+    public int64 items;
+
+    public Cart() {
+        this.subtotal = 0;
+        this.items = 0;
+    }
+
+    public void add(int64 priceCents) {
+        this.subtotal = this.subtotal + priceCents;
+        this.items = this.items + 1;
+    }
+
+    /** Total with flat 100-cent shipping once the cart is non-empty. */
+    public int64 totalCents() {
+        if (this.items == 0) {
+            return 0;
+        }
+        return this.subtotal + 100;
+    }
+}
+
+// The test class Runner.runAll() discovers. Static counters exist so
+// DiscoveryDemo can PROVE the lifecycle contract after the run.
+public class CartTest {
+    public static int32 built = 0;
+    public static int32 setUps = 0;
+    public static int32 tearDowns = 0;
+    public static int32 disabledRuns = 0;
+
+    Cart cart;
+
+    public CartTest() {
+        CartTest.built = CartTest.built + 1;
+        this.cart = null;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        CartTest.setUps = CartTest.setUps + 1;
+        this.cart = heap Cart();
+    }
+
+    @Test
+    public void totalAddsFlatShipping() {
+        this.cart.add(1999);
+        this.cart.add(550);
+        Assert.that(this.cart.totalCents()).isEqualTo(2649);   // 1999+550+100
+    }
+
+    @Test
+    public void emptyCartShipsNothing() {
+        // A fresh instance + fresh @BeforeEach cart: the previous test's
+        // items are NOT here — that is the fresh-instance guarantee.
+        Assert.that(this.cart.totalCents()).isEqualTo(0);
+        Assert.that(this.cart.items).isZero();
+    }
+
+    @Disabled
+    @Test
+    public void flakyCurrencyConversion() {
+        // Skipped, never run: parked on an upstream fix. @Disabled keeps
+        // it visible in the report instead of silently deleted.
+        CartTest.disabledRuns = CartTest.disabledRuns + 1;
+    }
+
+    @AfterEach
+    public void tearDown() {
+        CartTest.tearDowns = CartTest.tearDowns + 1;
+    }
+}
+
+public class DiscoveryDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- @Test discovery: Runner.runAll() over CartTest --");
+
+        int32 rc = Runner.runAll();
+        Assert.that(rc).isEqualTo(0);
+
+        // The lifecycle contract, proven by the counters: two enabled
+        // tests -> two fresh instances, two setUp/tearDown brackets; the
+        // @Disabled body never ran.
+        Assert.that(CartTest.built).isEqualTo(2);
+        Assert.that(CartTest.setUps).isEqualTo(2);
+        Assert.that(CartTest.tearDowns).isEqualTo(2);
+        Assert.that(CartTest.disabledRuns).isZero();
+        System.stdout.println("  fresh-instance proof: 2 tests -> built=2, setUp=2, tearDown=2, disabled ran 0x");
+    }
+}

@@ -1,31 +1,51 @@
 package tour.doubles;
 
 import tour.DemoClass;
+import tour.subject.SignupService;
 import dev.cajeta.unit.Assert;
 import dev.cajeta.unit.CallLog;
 import dev.cajeta.unit.Verify;
 
-// Showcases the simplest doubles — dev.cajeta.unit.CallLog + Verify: record
-// method invocations by name and assert what was called. (For stubbed returns,
-// argument matching, capture, and order, see the stubbing/verify/capture/inorder
-// demos, which use MockEngine.)
+// The simplest test double — a hand-written mock embedding a CallLog, the
+// recipe CallLog's own doc prescribes:
+//
+//   class LoggingMailer extends Mailer {
+//       CallLog log;                         // the double's memory
+//       send(to) { log.track("send"); ... }  // each method records itself
+//   }
+//
+// The TEST then exercises the SUBJECT and asserts against mock.log via
+// Verify.received / receivedTimes / neverReceived. No engine, no stubbing —
+// the right tool when you only care THAT calls happened. (For stubbed
+// returns, matching, capture, and order, the MockEngine demos follow.)
 public class DoublesDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
-        System.stdout.println("-- Test doubles: CallLog + Verify --");
+        System.stdout.println("-- Test doubles: a CallLog-embedding mock, driven via the subject --");
 
-        CallLog log = heap CallLog();
-        log.track("send");
-        log.track("send");
-        log.track("retry");
+        LoggingMailer mailer = heap LoggingMailer();
+        SignupService svc = heap SignupService(mailer);
 
-        Verify.received(log, "send");
-        Verify.receivedTimes(log, "send", 2);
-        Verify.neverReceived(log, "delete");
+        // Exercise the SUBJECT; the double records what the subject did.
+        svc.signup("alice@example.com");
+        svc.inviteTeam("alice@example.com", "bob@example.com");
 
-        Assert.that(log.count("send")).isEqualTo(2);
-        Assert.that(log.total()).isEqualTo(3);
+        Verify.received(mailer.log, "send");
+        Verify.receivedTimes(mailer.log, "send", 3);   // 1 signup + 2 invites
+        Verify.received(mailer.log, "close");
+        Verify.neverReceived(mailer.log, "delete");
+        Assert.that(mailer.log.count("send")).isEqualTo(3);
+        Assert.that(mailer.log.total()).isEqualTo(4);
+        System.stdout.println("  the subject caused 3x send + 1x close; delete never happened");
 
-        System.stdout.println("  recorded 2x send + 1x retry; verified received / receivedTimes / neverReceived");
+        // CallLog.reset() clears the log for the next case — the
+        // hand-written analogue of MockEngine.reset(). (Fresh-instance
+        // discipline per @Test — see the discovery demo — makes both
+        // unnecessary; reset is for reusing one double across cases.)
+        mailer.log.reset();
+        Assert.that(mailer.log.total()).isEqualTo(0);
+        svc.signup("carol@example.com");
+        Verify.receivedTimes(mailer.log, "send", 1);
+        System.stdout.println("  log.reset() gave the next case a clean slate");
     }
 }

@@ -2,6 +2,7 @@ package tour.verify;
 
 import tour.DemoClass;
 import tour.doubles.MockMailer;
+import tour.subject.SignupService;
 import dev.cajeta.unit.Assert;
 import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.ArgMatchers;
@@ -9,31 +10,44 @@ import dev.cajeta.unit.Mock;
 import dev.cajeta.unit.MockVerify;
 import cajeta.lang.Int64;
 
-// Showcases verification — dev.cajeta.unit.MockVerify: times / once / never /
-// atLeast / atMost, plus argument-matched counts (timesWith).
+// Verification — after exercising the SUBJECT, assert what it did to its
+// collaborator: MockVerify.times / once / never / atLeast / atMost, plus
+// the argument-matched forms (timesWith / countWith / neverWith) that say
+// not just "how often" but "with what".
 public class VerifyDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
-        System.stdout.println("-- Verification: MockVerify --");
+        System.stdout.println("-- Verification: MockVerify over a driven subject --");
 
         MockMailer mailer = heap MockMailer();
+        SignupService svc = heap SignupService(mailer);
         Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
-        mailer.send("alice");
-        mailer.send("alice");
-        mailer.send("bob");
-        mailer.close();
 
-        MockVerify.times(mailer.engine, "send", 3);
+        // Drive the SUBJECT: two signups for alice (a retry), one team
+        // invite (owner + member + close).
+        svc.signup("alice@example.com");
+        svc.signup("alice@example.com");
+        svc.inviteTeam("alice@example.com", "bob@example.com");
+
+        // Counts: 4 sends total (2 signups + 2 invite recipients), exactly
+        // one close, never an "open" — the service has no such call.
+        MockVerify.times(mailer.engine, "send", 4);
         MockVerify.once(mailer.engine, "close");
         MockVerify.never(mailer.engine, "open");
         MockVerify.atLeast(mailer.engine, "send", 2);
-        MockVerify.atMost(mailer.engine, "send", 3);
+        MockVerify.atMost(mailer.engine, "send", 4);
 
-        Matcher[] toAlice = [ ArgMatchers.eq(#("alice")) ];
-        MockVerify.timesWith(mailer.engine, "send", #toAlice, 2);
+        // Argument-matched: WHO got mail. alice three times (2 signups +
+        // owner slot), bob once, carol never.
+        Matcher[] toAlice = [ ArgMatchers.eq(#("alice@example.com")) ];
+        MockVerify.timesWith(mailer.engine, "send", #toAlice, 3);
+        Matcher[] toBob = [ ArgMatchers.eq(#("bob@example.com")) ];
+        Assert.that(MockVerify.countWith(mailer.engine, "send", #toBob))
+            .isEqualTo(1);
+        Matcher[] toCarol = [ ArgMatchers.eq(#("carol@example.com")) ];
+        MockVerify.neverWith(mailer.engine, "send", #toCarol);
 
-        Assert.that(MockVerify.count(mailer.engine, "send")).isEqualTo(3);
-
-        System.stdout.println("  verified: 3x send, 1x close, never open, 2x send(\"alice\")");
+        Assert.that(MockVerify.count(mailer.engine, "send")).isEqualTo(4);
+        System.stdout.println("  the service sent 4 mails: alice x3, bob x1, carol never; closed once");
     }
 }

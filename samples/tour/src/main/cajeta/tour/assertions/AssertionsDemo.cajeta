@@ -11,13 +11,15 @@ public class AssertionsDemo extends DemoClass {
         System.stdout.println("");
         System.stdout.println("-- Assertions (Assert) --");
 
-        Assert.that(2 + 2).isEqualTo(4);
-        Assert.that(5).isGreaterThan(3);
-        Assert.that("o_42").startsWith("o_");
-        Assert.that("o_42").hasLength(4);
-        Assert.thatFloat(3.14159).isCloseTo(3.14, 0.01);
-        Assert.isTrue(1 < 2);
-        Assert.isFalse(2 < 1);
+        // A parsed order: id, line total in cents, computed tax.
+        int64 lineTotal = 1999 + 550;
+        Assert.that(lineTotal).isEqualTo(2549);
+        Assert.that(lineTotal).isGreaterThan(2000);
+        Assert.that("ord_20260731_0042").startsWith("ord_");
+        Assert.that("ord_20260731_0042").hasLength(17);
+        Assert.thatFloat(2549.0 * 0.0875).isCloseTo(223.0, 0.5);
+        Assert.isTrue(lineTotal < 10000);
+        Assert.isFalse(lineTotal < 0);
         Assert.assertThrows(() -> {
             Assert.fail("deliberate failure");
         });

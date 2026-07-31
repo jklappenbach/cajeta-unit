@@ -3,7 +3,10 @@ package tour;
 import cajeta.collection.ArrayList;
 
 import tour.assertions.*;
+import tour.discovery.*;
+import tour.report.*;
 import tour.runner.*;
+import tour.inject.*;
 import tour.doubles.*;
 import tour.matchers.*;
 import tour.stubbing.*;
@@ -26,6 +29,8 @@ public final class Tour {
 
         ArrayList<DemoClass> demos = heap ArrayList<DemoClass>();
         demos.add(heap AssertionsDemo());
+        demos.add(heap DiscoveryDemo());
+        demos.add(heap ReportDemo());
         demos.add(heap RunnerDemo());
         demos.add(heap DoublesDemo());
         demos.add(heap MatchersDemo());
@@ -33,6 +38,7 @@ public final class Tour {
         demos.add(heap VerifyDemo());
         demos.add(heap CaptureDemo());
         demos.add(heap InOrderDemo());
+        demos.add(heap InjectDemo());
 
         int32 i = 0;
         int32 n = (int32) demos.count();

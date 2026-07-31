@@ -1,0 +1,26 @@
+# Types exempt from the tour-coverage gate (scripts/check-library-tour-coverage.sh).
+# Each entry must justify itself: only genuine internals belong here — a public
+# type a USER would reach for must be toured instead.
+
+# The framework's own test suite and its fixtures ("the framework, tested with
+# itself"). Tours are not test suites (tour-quality spec 1.5); a consumer
+# never imports dev.cajeta.unit.selftest.*.
+dev.cajeta.unit.selftest.SelfTest
+dev.cajeta.unit.selftest.discovery.ExampleTest
+dev.cajeta.unit.selftest.doubles.Coin
+dev.cajeta.unit.selftest.doubles.Gateway
+dev.cajeta.unit.selftest.doubles.MockGateway
+dev.cajeta.unit.selftest.inject.Greeter
+dev.cajeta.unit.selftest.inject.MockGreeter
+dev.cajeta.unit.selftest.inject.Service
+
+# The rule record under Stubbing. Users program rules through
+# Mock.when(...) -> Stubbing (toured, incl. withArgs); constructing or
+# holding a StubRule directly is engine plumbing.
+dev.cajeta.unit.StubRule
+
+# The assertion-failure exception. Catching it from a consumer binary is
+# blocked by the cross-.cja catch crash (cajeta INDEX:
+# cross-cja-exception-catch); the gated demos in StubbingDemo/InOrderDemo
+# carry the ready-to-enable code. Move this into the tour when that lands.
+dev.cajeta.unit.AssertionFailure

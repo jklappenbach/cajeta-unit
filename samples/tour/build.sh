@@ -24,7 +24,9 @@ fi
 # 2. Compile the tour with the library on the classpath.
 cd "$SCRIPT_DIR"
 mkdir -p build
-"$CAJETA" --emit=exe --debug --classpath="$CJA" \
+# --profile=test: the InjectDemo needs the @Inject override hook emitted at
+# the tour's own @Inject sites (TestContext only works in a test build).
+"$CAJETA" --emit=exe --debug --profile=test --classpath="$CJA" \
     -o build/tour tour.Tour.main src/main/cajeta build/archive
 
 echo "built: $SCRIPT_DIR/build/tour"

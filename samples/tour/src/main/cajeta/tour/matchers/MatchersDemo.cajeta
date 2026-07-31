@@ -6,8 +6,11 @@ import dev.cajeta.unit.Matcher;
 import dev.cajeta.unit.ArgMatchers;
 import cajeta.lang.Int64;
 
-// Showcases dev.cajeta.unit.ArgMatchers / Matcher — the argument matchers used
-// by stubbing and verification: any / eqInt / isNull / notNull / argThat.
+// The argument-matcher vocabulary — any / eq / eqInt / isNull / notNull /
+// argThat — exercised standalone here so each predicate's contract is
+// visible. Their REAL roles are in the demos that follow: Stubbing.withArgs
+// (route answers by argument) and MockVerify.timesWith/neverWith (count
+// calls by argument); standalone matches() is a footnote, not the idiom.
 public class MatchersDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
@@ -15,6 +18,7 @@ public class MatchersDemo extends DemoClass {
 
         Matcher any = ArgMatchers.any();
         Matcher eq = ArgMatchers.eqInt(1999);
+        Matcher isNull = ArgMatchers.isNull();
         Matcher notNull = ArgMatchers.notNull();
         Matcher big = ArgMatchers.argThat((Object o) -> {
             Int64 i = (Int64) o;
@@ -24,6 +28,8 @@ public class MatchersDemo extends DemoClass {
         Assert.isTrue(any.matches(Int64.of(7)));
         Assert.isTrue(eq.matches(Int64.of(1999)));
         Assert.isFalse(eq.matches(Int64.of(2000)));
+        Assert.isTrue(isNull.matches(null));
+        Assert.isFalse(isNull.matches(Int64.of(0)));
         Assert.isTrue(notNull.matches(Int64.of(1)));
         Assert.isFalse(notNull.matches(null));
         Assert.isTrue(big.matches(Int64.of(5000)));

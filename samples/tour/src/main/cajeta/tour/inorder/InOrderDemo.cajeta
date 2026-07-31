@@ -2,33 +2,45 @@ package tour.inorder;
 
 import tour.DemoClass;
 import tour.doubles.MockMailer;
+import tour.subject.SignupService;
 import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Matcher;
+import dev.cajeta.unit.ArgMatchers;
 import dev.cajeta.unit.Mock;
 import dev.cajeta.unit.InOrder;
 import cajeta.lang.Int64;
 
-// Showcases in-order verification — dev.cajeta.unit.InOrder: assert calls
-// happened in sequence, not merely that they happened.
+// In-order verification — InOrder asserts the SEQUENCE of collaborator
+// calls, not merely their counts: inviteTeam must mail the owner, then the
+// member, then close the session. verifyWith adds argument matching to the
+// sequence — "the owner's mail came before the member's".
 public class InOrderDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
-        System.stdout.println("-- In-order verification: InOrder --");
+        System.stdout.println("-- In-order verification: InOrder over inviteTeam --");
 
         MockMailer mailer = heap MockMailer();
+        SignupService svc = heap SignupService(mailer);
         Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
-        mailer.send("alice");
-        mailer.close();
+
+        svc.inviteTeam("owner@example.com", "member@example.com");
 
         InOrder order = heap InOrder();
-        order.verify(mailer.engine, "send");
+        Matcher[] toOwner = [ ArgMatchers.eq(#("owner@example.com")) ];
+        order.verifyWith(mailer.engine, "send", #toOwner);
+        Matcher[] toMember = [ ArgMatchers.eq(#("member@example.com")) ];
+        order.verifyWith(mailer.engine, "send", #toMember);
         order.verify(mailer.engine, "close");
-        System.stdout.println("  verified send happened before close");
+        System.stdout.println("  verified: owner mailed, then member, then close");
 
-        // The reverse order is rejected: verifying send *after* close would
-        // throw an AssertionFailure (a later call appearing before the cursor).
-        // We don't catch it here — catching an exception thrown inside the
-        // linked .cja from this consumer crashes in the current toolchain — but
-        // the framework self-tests cover the out-of-order failure path.
-        Assert.isTrue(mailer.engine.callCount("send") == 1);
+        // The reverse order is rejected: verifying close *before* the owner
+        // send would throw AssertionFailure. Not demonstrated — catching an
+        // exception thrown inside the linked .cja from this consumer crashes
+        // today (cajeta INDEX: cross-cja-exception-catch). When that lands:
+        //   InOrder bad = heap InOrder();
+        //   bad.verify(mailer.engine, "close");
+        //   try { bad.verify(mailer.engine, "send"); Assert.fail("unreached"); }
+        //   catch (AssertionFailure e) { /* out-of-order detected */ }
+        Assert.isTrue(mailer.engine.callCount("send") == 2);
     }
 }

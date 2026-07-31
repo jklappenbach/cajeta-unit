@@ -1,0 +1,29 @@
+package tour.subject;
+
+import tour.doubles.Mailer;
+
+// The component under test for every mock demo — a small real service that
+// USES the Mailer collaborator. This is the point of mocking: you stub and
+// verify the collaborator in order to test the component's behavior, not to
+// test the mock you just programmed.
+//
+// signup(email) sends the welcome mail and returns the mailer's message id;
+// inviteTeam sends to owner then member, then closes the session — the
+// ordered sequence InOrderDemo verifies.
+public class SignupService {
+    Mailer mailer;   // borrowed collaborator — the test owns the mock
+
+    public SignupService(Mailer mailer) {
+        this.mailer = mailer;
+    }
+
+    public int64 signup(String email) {
+        return this.mailer.send(email);
+    }
+
+    public void inviteTeam(String owner, String member) {
+        this.mailer.send(owner);
+        this.mailer.send(member);
+        this.mailer.close();
+    }
+}

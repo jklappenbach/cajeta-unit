@@ -1,0 +1,23 @@
+package tour.doubles;
+
+import dev.cajeta.unit.CallLog;
+
+// support: the CallLog recipe from the library's own doc — a hand-written
+// double that subclasses the real collaborator and records each call by
+// name. send answers a fixed id (this double doesn't stub; it remembers).
+public class LoggingMailer extends Mailer {
+    public CallLog log;
+
+    public LoggingMailer() {
+        this.log = heap CallLog();
+    }
+
+    public int64 send(String to) {
+        this.log.track("send");
+        return 1;
+    }
+
+    public void close() {
+        this.log.track("close");
+    }
+}

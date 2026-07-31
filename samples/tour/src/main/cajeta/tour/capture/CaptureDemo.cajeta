@@ -2,29 +2,59 @@ package tour.capture;
 
 import tour.DemoClass;
 import tour.doubles.MockMailer;
+import tour.subject.SignupService;
 import dev.cajeta.unit.Assert;
 import dev.cajeta.unit.Mock;
+import dev.cajeta.unit.Invocation;
 import cajeta.lang.Int64;
 
-// Showcases argument capture — read the actual arguments a mock received via
-// MockEngine.argOf / lastArgOf and assert on them.
+// Argument capture — read the actual arguments the SUBJECT passed to its
+// collaborator:
+//
+//   engine.argOf(method, call, arg) / lastArgOf(method, arg)   quick reads
+//   engine.invocationOf(method, nth) -> Invocation             the full call
+//                                        record (method + every argument)
+//   engine.totalCalls() / reset()                              mock hygiene
+//
+// Capture answers "what exactly did my component send?" when the value is
+// computed inside the subject — here, whom the welcome mails went to.
 public class CaptureDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
-        System.stdout.println("-- Argument capture: engine.argOf / lastArgOf --");
+        System.stdout.println("-- Argument capture: argOf / lastArgOf / invocationOf --");
 
         MockMailer mailer = heap MockMailer();
+        SignupService svc = heap SignupService(mailer);
         Mock.when(mailer.engine, "send").thenReturn(#Int64.of(1));
-        mailer.send("alice@example.com");
-        mailer.send("bob@example.com");
+        svc.signup("alice@example.com");
+        svc.signup("bob@example.com");
 
         String first = (String) mailer.engine.argOf("send", 0, 0);
         String last = (String) mailer.engine.lastArgOf("send", 0);
-
         Assert.that(first).isEqualTo("alice@example.com");
         Assert.that(last).isEqualTo("bob@example.com");
-
         System.stdout.println("  first send to = " + first);
         System.stdout.println("  last  send to = " + last);
+
+        // The full call record: an Invocation is (method, args) — the
+        // engine keeps them all, invocationOf hands back the nth as a
+        // BORROW. Read it INLINE: binding the borrowed record to a local
+        // registers a scope-exit drop and frees the engine's copy — the
+        // same container-borrow sharp edge MockMailer.send documents.
+        Assert.that(mailer.engine.invocationOf("send", 1).method())
+            .isEqualTo("send");
+        Assert.that(mailer.engine.invocationOf("send", 1).argCount())
+            .isEqualTo(1);
+        Assert.that((String) mailer.engine.invocationOf("send", 1).arg(0))
+            .isEqualTo("bob@example.com");
+
+        // Mock hygiene: totalCalls counts everything recorded; reset()
+        // wipes calls AND stubs — the reuse-one-mock shape. (The cleaner
+        // discipline is a fresh mock per test, which @Test's fresh-instance
+        // semantics give you for free — see the discovery demo.)
+        Assert.that(mailer.engine.totalCalls()).isEqualTo(2);
+        mailer.engine.reset();
+        Assert.that(mailer.engine.totalCalls()).isEqualTo(0);
+        System.stdout.println("  invocationOf(send, 1) = send(bob@example.com); reset() wiped the log");
     }
 }

@@ -1,0 +1,77 @@
+package tour.inject;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.TestContext;
+
+// TestContext — overriding what @Inject resolves to, for tests. In a build
+// compiled with --profile=test (this tour's build.sh passes it), every
+// @Inject site also consults a runtime override registry:
+//
+//   TestContext.bind(Clock.class, fake);   // every @Inject Clock -> fake
+//   ... construct + exercise the component under test ...
+//   TestContext.clear();                    // forget overrides between tests
+//
+// Bind BEFORE the component is constructed (injection happens at
+// construction), and bind a SUBCLASS overriding virtual methods — v1 scope
+// is class-typed @Inject fields. The registry borrows: you own the fake,
+// clear() only forgets it.
+//
+// The scenario: a deadline checker that depends on a Clock — the canonical
+// "test time without waiting" substitution.
+
+// support: the real provider — a wall clock (fixed here for the demo's
+// determinism; imagine epoch millis).
+@Component
+class Clock {
+    public Clock() {
+    }
+
+    public int64 now() {
+        return 1785000000;
+    }
+}
+
+// support: the double — subclasses the real component, overrides now().
+class FixedClock extends Clock {
+    public FixedClock() {
+    }
+
+    public int64 now() {
+        return 500;
+    }
+}
+
+// support: the component under test — @Inject wires its Clock.
+@Component
+class Deadline {
+    @Inject Clock clock;
+
+    public Deadline() {
+    }
+
+    public boolean overdue(int64 dueAt) {
+        return this.clock.now() > dueAt;
+    }
+}
+
+public class InjectDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- TestContext: overriding @Inject in a --profile=test build --");
+
+        // Bind the fake BEFORE obtaining the component; its @Inject Clock
+        // then resolves to our FixedClock (now() == 500).
+        FixedClock fixed = heap FixedClock();
+        TestContext.bind(Clock.class, fixed);
+        Deadline d = Deadline.__cajeta_inject();
+        Assert.isTrue(d.overdue(499));      // 500 > 499 — just missed it
+        Assert.isFalse(d.overdue(500));     // not yet at 501
+        System.stdout.println("  with the bound FixedClock(500): overdue(499)=true, overdue(500)=false");
+
+        // clear() forgets the override — later tests start unpolluted.
+        // (The fake is ours; clear never frees it.)
+        TestContext.clear();
+        System.stdout.println("  TestContext.clear() -> the next test binds its own world");
+    }
+}

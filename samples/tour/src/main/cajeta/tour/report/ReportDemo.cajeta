@@ -1,0 +1,69 @@
+package tour.report;
+
+import tour.DemoClass;
+import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.TestRunner;
+import dev.cajeta.unit.Int64Subject;
+import dev.cajeta.unit.StringSubject;
+import dev.cajeta.unit.Float64Subject;
+
+// The failure report — the framework's actual product. A deliberately
+// failing test in a SCRATCH TestRunner shows the line a junior will stare
+// at all day (the ✗ FAIL with the assertion's message) and the nonzero
+// summary() a CI gate keys off. The tour's own run stays green: the
+// failure lives in this sandboxed runner, and we assert ON the report.
+//
+// Also here: the classic Assert.equals forms, and the fluent subjects as
+// NAMED values — Assert.that(...) returns an Int64Subject / StringSubject
+// (and thatFloat a Float64Subject) whose vocabulary goes well beyond
+// isEqualTo: contains/endsWith/isEmpty, isZero/isPositive/isNegative,
+// isNotEqualTo, float comparisons.
+public class ReportDemo extends DemoClass {
+    public void execute() {
+        System.stdout.println("");
+        System.stdout.println("-- The failure report: a red test, its output, exit code 1 --");
+
+        // A scratch runner with one green, one red, one skipped — what a
+        // real suite looks like mid-bugfix. The FAIL line below is the
+        // demo, not an accident.
+        TestRunner runner = heap TestRunner();
+        runner.test("cart totals sum", () -> {
+            Assert.that(1999 + 550 + 100).isEqualTo(2649);
+        });
+        runner.test("refund cannot exceed the charge", () -> {
+            // The bug under investigation: refund 2700 against a 2649
+            // charge. The assertion fails — THIS is the report's product.
+            Assert.that(2700).isLessThanOrEqualTo(2649);
+        });
+        runner.skip("multi-currency totals", "parked on FX-rate fixture");
+
+        int32 rc = runner.summary();
+        Assert.that(rc).isEqualTo(1);
+        System.stdout.println("  summary() = " + rc
+            + " -> CI goes red on exactly this exit code");
+
+        // The classic assertion forms, for the JUnit-shaped muscle memory.
+        Assert.equals(2649, 1999 + 550 + 100);
+        Assert.equals("ord_0042", "ord_" + "0042");
+
+        // The fluent subjects as named values, with the wider vocabulary.
+        Int64Subject refunds = Assert.that(0);
+        refunds.isZero();
+        Int64Subject balance = Assert.that(2649);
+        balance.isPositive();
+        balance.isNotEqualTo(0);
+        Int64Subject drift = Assert.that(0 - 51);
+        drift.isNegative();
+        StringSubject orderId = Assert.that("ord_20260731_0042");
+        orderId.contains("20260731");
+        orderId.endsWith("_0042");
+        orderId.isNotEmpty();
+        StringSubject note = Assert.that("");
+        note.isEmpty();
+        Float64Subject taxRate = Assert.thatFloat(0.0875);
+        taxRate.isGreaterThan(0.0);
+        taxRate.isLessThan(0.1);
+        taxRate.isCloseTo(0.09, 0.005);
+        System.stdout.println("  subject vocabulary: zero/positive/negative, contains/endsWith/empty, float bounds");
+    }
+}
