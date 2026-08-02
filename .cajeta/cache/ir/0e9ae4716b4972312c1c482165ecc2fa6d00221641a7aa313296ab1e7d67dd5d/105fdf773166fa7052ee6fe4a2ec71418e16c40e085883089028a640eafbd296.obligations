@@ -1,7 +1,0 @@
-cajeta.lang.Optional<cajeta.reflect.Class<?>>
-cajeta.lang.Optional<dev.cajeta.unit.selftest.inject.Greeter>
-cajeta.lang.Optional<dev.cajeta.unit.selftest.inject.MockGreeter>
-cajeta.reflect.Class<?>
-cajeta.reflect.Class<dev.cajeta.unit.selftest.inject.Greeter>
-cajeta.reflect.Class<dev.cajeta.unit.selftest.inject.MockGreeter>
-dev.cajeta.unit.TestContext::bind(cajeta.reflect.Class<dev.cajeta.unit.selftest.inject.MockGreeter>,dev.cajeta.unit.selftest.inject.MockGreeter)<dev.cajeta.unit.selftest.inject.MockGreeter>
