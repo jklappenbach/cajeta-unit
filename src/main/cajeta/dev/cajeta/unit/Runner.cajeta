@@ -6,9 +6,10 @@ import cajeta.lang.String;
 
 /**
  * Annotation-driven test discovery. `runAll()` enumerates every class in the
- * binary (`Class.allClasses()`), and for each one runs its `@Test` methods with
- * `@BeforeEach` / `@AfterEach` lifecycle and `@Disabled` skipping. Classes with
- * no `@Test` method contribute nothing.
+ * binary declaring a `@Test` method (`Class.classesWithMethodAnnotated`,
+ * the bounded form — a lean-linked binary keeps exactly the test classes
+ * instead of the whole registry), and for each one runs its `@Test` methods
+ * with `@BeforeEach` / `@AfterEach` lifecycle and `@Disabled` skipping.
  *
  * ```cajeta
  * public static int32 run() { return Runner.runAll(); }
@@ -37,7 +38,12 @@ public final class Runner {
     /** Discover and run every `@Test` method in the binary; report + exit code. */
     public static int32 runAll() {
         TestRunner runner = heap TestRunner();
-        Class<?>[] all = Class.allClasses();
+        // Bounded discovery. `allClasses()` forced keep-all on every lean
+        // link of every consumer's test binary; the method-annotation
+        // enumerator with a LITERAL selector (the literal is what the lean
+        // linker's classifier reads — Runner's TEST constant would not
+        // bound) keeps exactly the classes declaring a @Test method.
+        Class<?>[] all = Class.classesWithMethodAnnotated("code.Test");
         int32 n = (int32) all.count();
         int32 i = 0;
         while (i < n) {
