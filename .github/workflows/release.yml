@@ -22,7 +22,7 @@ jobs:
       # the collection-literals migration.
       # Raised to v0.12.1 with the unit-7 tour rewrite: the expanded tour is
       # authored and verified against the 0.12 line.
-      cajeta-version: v0.15.0
+      cajeta-version: v0.16.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test
