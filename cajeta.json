@@ -16,7 +16,7 @@
 
     "details": {
         "name":               "dev.cajeta.unit",
-        "version":            "0.2.1",
+        "version":            "0.2.2",
         "description":        "cajeta-unit — test framework: @Test discovery, assertions, and mocks",
         "license":            "Apache-2.0",
         "authors":            ["Julian Klappenbach"],
