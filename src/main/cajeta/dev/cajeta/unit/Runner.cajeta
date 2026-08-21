@@ -43,7 +43,7 @@ public final class Runner {
         // enumerator with a LITERAL selector (the literal is what the lean
         // linker's classifier reads — Runner's TEST constant would not
         // bound) keeps exactly the classes declaring a @Test method.
-        Class<?>[] all = Class.classesWithMethodAnnotated("code.Test");
+        Class<?>[] all #= Class.classesWithMethodAnnotated("code.Test");
         int32 n = (int32) all.count();
         int32 i = 0;
         while (i < n) {
@@ -59,14 +59,14 @@ public final class Runner {
         int32 mc = c.getMethodCount();
         int32 mi = 0;
         while (mi < mc) {
-            Method t = c.getMethod(mi);
+            Method t #= c.getMethod(mi);
             int32 idx = mi;
             mi = mi + 1;
             if (!t.hasAnnotation(TEST)) {
                 continue;
             }
             // getName() is already the qualified `Class::method(params)` form.
-            String name = t.getName();
+            String name #= t.getName();
             if (t.hasAnnotation(DISABLED)) {
                 runner.skip(name, "@Disabled");
                 continue;
@@ -75,9 +75,33 @@ public final class Runner {
         }
     }
 
+    /**
+     * The failure message, OWNED.
+     *
+     * `e.message` is a field read, so it is a BORROW of the caught exception's
+     * storage, and `e` belongs to the catch block. Binding it plainly and using
+     * it after the catch — which is what `msg = e.message` did until
+     * 2026-08-21 — leaves a dangling window into a dropped object.
+     *
+     * It survived for a long time because nothing on the passing path reads
+     * `msg`, and on the failing path the read usually happened before anything
+     * reused the memory. What made it fatal was any ALLOCATION landing between
+     * the catch and the use: cajeta-coco's per-test attribution hook builds a
+     * profile and writes a file at the top of `recordResult`, and with that in
+     * the binary a failing test SIGSEGVs — measured 3/3, and 3/3 clean with the
+     * hook removed from otherwise identical objects. The fault was in runOne's
+     * own epilogue, not in the hook.
+     *
+     * `substring(0, byteLength())` is the copy — `String` is a producer there,
+     * so the result carries a title and `#=` records it. The null guard leaves
+     * `msg` at its `""` initializer, which is a borrow of a constant and needs
+     * no drop; returning a literal from a `#String` helper would instead claim
+     * title over a constant, so this is written inline rather than factored.
+     */
+
     /** Run one `@Test` (by method index) with lifecycle; record the outcome. */
     static void runOne(TestRunner runner, Class<?> c, int32 testIndex, String name) {
-        Method t = c.getMethod(testIndex);
+        Method t #= c.getMethod(testIndex);
         if (t.getModifiers().isStatic()) {
             boolean sok = true;
             String smsg = "";
@@ -85,7 +109,10 @@ public final class Runner {
                 t.invokeObject(null);
             } catch (Exception e) {
                 sok = false;
-                smsg = e.message;
+                // COPY, not `smsg = e.message` — see the note above runOne.
+                if (e.message != null) {
+                    smsg #= e.message.substring(0, e.message.byteLength());
+                }
             }
             recordResult(runner, name, sok, smsg);
             return;
@@ -94,20 +121,24 @@ public final class Runner {
         // (always — reliable teardown). A throw anywhere fails the test.
         boolean ok = true;
         String msg = "";
-        Object inst = c.heapInstance(0);
+        Object inst #= c.heapInstance(0);
         try {
             invokeLifecycle(c, inst, BEFORE_EACH);
             t.invokeObject(inst);
         } catch (Exception e) {
             ok = false;
-            msg = e.message;
+            if (e.message != null) {
+                msg #= e.message.substring(0, e.message.byteLength());
+            }
         }
         try {
             invokeLifecycle(c, inst, AFTER_EACH);
         } catch (Exception e) {
             if (ok) {
                 ok = false;
-                msg = e.message;
+                if (e.message != null) {
+                    msg #= e.message.substring(0, e.message.byteLength());
+                }
             }
         }
         recordResult(runner, name, ok, msg);
@@ -118,7 +149,7 @@ public final class Runner {
         int32 mc = c.getMethodCount();
         int32 i = 0;
         while (i < mc) {
-            Method m = c.getMethod(i);
+            Method m #= c.getMethod(i);
             if (m.hasAnnotation(annotationName)) {
                 m.invokeObject(inst);
             }

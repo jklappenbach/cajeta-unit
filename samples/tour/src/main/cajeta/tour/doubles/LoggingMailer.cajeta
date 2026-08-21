@@ -9,7 +9,7 @@ public class LoggingMailer extends Mailer {
     public CallLog log;
 
     public LoggingMailer() {
-        this.log = heap CallLog();
+        this.log #= heap CallLog();
     }
 
     public int64 send(String to) {

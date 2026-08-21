@@ -11,10 +11,17 @@ import tour.doubles.Mailer;
 // inviteTeam sends to owner then member, then closes the session — the
 // ordered sequence InOrderDemo verifies.
 public class SignupService {
-    Mailer mailer;   // borrowed collaborator — the test owns the mock
+    // A DELIBERATE non-owning alias: the demo owns the mock and outlives the
+    // service, so the service must not take title. `#=` is the spelling for
+    // that — it is mode-carrying, so a plain (borrowed) argument records a
+    // BORROW and nothing here claims to own the mailer. A plain `=` is
+    // rejected outright (CAJETA_ERROR_CAPTURED_BORROW_PARAM): a captured
+    // borrow is invisible at the call site, which is exactly what makes it
+    // dangerous when the service DOES outlive its collaborator.
+    Mailer mailer;
 
     public SignupService(Mailer mailer) {
-        this.mailer = mailer;
+        this.mailer #= mailer;
     }
 
     public int64 signup(String email) {

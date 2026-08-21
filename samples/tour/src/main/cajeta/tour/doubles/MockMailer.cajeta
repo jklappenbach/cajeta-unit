@@ -13,7 +13,7 @@ public class MockMailer extends Mailer {
     public MockEngine engine;
 
     public MockMailer() {
-        this.engine = heap MockEngine();
+        this.engine #= heap MockEngine();
     }
 
     public int64 send(String to) {

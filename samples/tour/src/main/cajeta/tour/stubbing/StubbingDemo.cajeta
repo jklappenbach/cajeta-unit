@@ -51,7 +51,7 @@ public class StubbingDemo extends DemoClass {
         // it, refine it with withArgs. VIP signups get the priority queue's
         // id range; everyone else keeps the default rule above.
         Matcher[] vip = [ ArgMatchers.eq(#("vip@example.com")) ];
-        Stubbing vipRule = Mock.when(mailer.engine, "send");
+        Stubbing vipRule #= Mock.when(mailer.engine, "send");
         vipRule.withArgs(#vip).thenReturn(#Int64.of(9001));
         int64 vipId = svc.signup("vip@example.com");
         int64 plain = svc.signup("dave@example.com");

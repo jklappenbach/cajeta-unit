@@ -28,7 +28,13 @@ jobs:
       # archive at all: cajeta-codec sat at v0.15.0 and its CI died on
       # `classesWithMethodAnnotated` before a single test ran. Keeping this at
       # the current release makes the floor explicit rather than discovered.
-      cajeta-version: v0.18.0
+      # Raised to v0.21.1 for the 0.2.3 cut, and this time it IS required, not
+      # just current: 0.2.3 is the ownership pass, and the two checks that
+      # forced it — CAJETA_ERROR_OWNED_RESULT_NEEDS_TRANSFER and
+      # CAJETA_ERROR_CAPTURED_BORROW_PARAM — are what an older toolchain does
+      # not have. Building 0.2.3 below this floor would compile sources whose
+      # `#=` spellings it cannot parse.
+      cajeta-version: v0.21.1
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test

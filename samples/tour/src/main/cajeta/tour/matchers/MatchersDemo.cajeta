@@ -16,11 +16,11 @@ public class MatchersDemo extends DemoClass {
         System.stdout.println("");
         System.stdout.println("-- Argument matchers (ArgMatchers) --");
 
-        Matcher any = ArgMatchers.any();
-        Matcher eq = ArgMatchers.eqInt(1999);
-        Matcher isNull = ArgMatchers.isNull();
-        Matcher notNull = ArgMatchers.notNull();
-        Matcher big = ArgMatchers.argThat((Object o) -> {
+        Matcher any #= ArgMatchers.any();
+        Matcher eq #= ArgMatchers.eqInt(1999);
+        Matcher isNull #= ArgMatchers.isNull();
+        Matcher notNull #= ArgMatchers.notNull();
+        Matcher big #= ArgMatchers.argThat((Object o) -> {
             Int64 i = (Int64) o;
             return i.value() > 1000;
         });

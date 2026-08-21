@@ -61,7 +61,7 @@ public class CartTest {
     @BeforeEach
     public void setUp() {
         CartTest.setUps = CartTest.setUps + 1;
-        this.cart = heap Cart();
+        this.cart #= heap Cart();
     }
 
     @Test
