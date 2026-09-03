@@ -34,7 +34,12 @@ jobs:
       # CAJETA_ERROR_CAPTURED_BORROW_PARAM — are what an older toolchain does
       # not have. Building 0.2.3 below this floor would compile sources whose
       # `#=` spellings it cannot parse.
-      cajeta-version: v0.21.1
+      # Raised to v0.26.0 for the 0.2.4 cut. This one is a refresh, not a new
+      # floor: 0.2.4 carries no source change. The point of the tag is that the
+      # published archive be built by the toolchain the rest of the ecosystem is
+      # now pinned to, so consumers stop resolving an artifact compiled by a
+      # compiler five releases behind the one they build against.
+      cajeta-version: v0.26.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test
