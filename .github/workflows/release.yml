@@ -39,6 +39,15 @@ jobs:
       # published archive be built by the toolchain the rest of the ecosystem is
       # now pinned to, so consumers stop resolving an artifact compiled by a
       # compiler five releases behind the one they build against.
+      #
+      # Unchanged for the 0.2.5 cut, which is the same shape of refresh as
+      # 0.2.4 and carries no source change either. What changed is the
+      # REGISTRY: olla now signs release metadata and binds it to the
+      # publishing organization (publisher-trust §2.6, §4.5), and it refuses
+      # any upload it cannot bind. Every artifact published before
+      # 2026-09-03 predates that, so none of them carry a publisher binding
+      # and nothing retrofits one — the signature is made at publish time.
+      # This tag is how 0.2.5 becomes the first archive a client can verify.
       cajeta-version: v0.26.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
