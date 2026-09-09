@@ -49,6 +49,6 @@ public final class ArgMatchers {
 
     /** Matches when `pred` accepts the (boxed) argument. Mockito's `argThat(...)`. */
     public static #Matcher argThat((Object) -> boolean pred) {
-        return heap PredMatcher(pred);
+        return heap PredMatcher(#pred);   // forward the title that arrived (cajeta ownership 5.13)
     }
 }

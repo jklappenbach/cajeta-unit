@@ -82,7 +82,7 @@ class PredMatcher extends Matcher {
     (Object) -> boolean pred;
 
     public PredMatcher((Object) -> boolean pred) {
-        this.pred = pred;
+        this.pred #= pred;   // a keeper stores with `#=`: a lambda literal moves in, a name lends (cajeta ownership 5.13)
     }
 
     public boolean matches(Object arg) {
