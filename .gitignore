@@ -8,3 +8,6 @@ gen/
 # Never source. Committed cache also risks feeding a stale artifact to a
 # different toolchain than the one that produced it.
 **/.cajeta/cache/
+
+# Scratch space for local builds, downloaded toolchains and probe programs.
+tmp/
