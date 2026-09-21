@@ -92,15 +92,17 @@ fails the build:
 
 ## Status
 
-**v0.1.0 — Phase 1 (assertions + runner + build integration), self-hosted.**
+**v0.3.0. Assertions, runner, build integration, `@Test` discovery and the AoT
+mock engine, built and published on cajeta v0.29.0.**
 cajeta-unit tests itself: a bootstrap proves the assertion engine detects both
 passing *and* failing checks before the engine is used to test the rest of the
 framework (see `dev.cajeta.unit.selftest`).
 
-Since then: annotation-driven `@Test` discovery (v0.3) and a **Mockito-style
-AoT mock engine** (v0.4) — `when/thenReturn/thenThrow`, argument matchers,
-`verify` (`times/atLeast/atMost`), argument capture, and in-order verification
-over hand-written mocks (see [docs/mockito-aot.md](docs/mockito-aot.md)).
+Shipped since the Phase 1 cut: annotation-driven `@Test` discovery and a
+**Mockito-style AoT mock engine** with `when/thenReturn/thenThrow`, argument
+matchers, `verify` (`times/atLeast/atMost`), argument capture, and in-order
+verification over hand-written mocks (see
+[docs/mockito-aot.md](docs/mockito-aot.md)).
 
 Roadmap (see the plan): auto-generated `@Mock` subclasses (needs a compiler
 codegen hook), spies, environment fakes (`FakeClock`, in-memory repos),

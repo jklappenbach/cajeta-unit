@@ -27,7 +27,7 @@
         // classpath plumbing lands this becomes a first-class dependency; until
         // then build.sh wires it via --classpath.
         "dependencies": {
-            "dev.cajeta.unit": "0.1.*"
+            "dev.cajeta.unit": "0.3.*"
         },
 
         "build": {

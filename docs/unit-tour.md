@@ -1,6 +1,6 @@
 # cajeta-unit — a hands-on tour
 
-A runnable walk through cajeta-unit v0.1.0: write tests, assert, run them from
+A runnable walk through cajeta-unit v0.3.0: write tests, assert, run them from
 the build. Pairs with the design in [`unit-spec.md`](./unit-spec.md).
 
 ## 1. Your first test
@@ -112,14 +112,14 @@ this: a `bootstrap()` verifies both paths with raw try/catch (no runner), and
 only then uses the now-trusted engine to test the rest. It's worth reading as the
 reference for the negative-test discipline.
 
-## 6. Gotchas (Cajeta-specific, v0.1.0)
+## 6. Gotchas (Cajeta-specific)
 
 - **Floats use `Assert.thatFloat(...)`, booleans use `Assert.isTrue/isFalse`.**
   An integer literal (`that(1)`) would mis-bind to a `that(float64)`/
   `that(boolean)` overload, so those entry points are deliberately named apart to
   keep the integer `that(...)` path unambiguous.
 - **A thrown exception in a test fails it** — whether a failed assertion or an
-  unexpected error. (v0.1.0 reports both as `✗ FAIL`.)
+  unexpected error. (Both are reported as `✗ FAIL`.)
 
 ## What's next
 

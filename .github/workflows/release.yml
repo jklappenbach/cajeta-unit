@@ -48,7 +48,28 @@ jobs:
       # 2026-09-03 predates that, so none of them carry a publisher binding
       # and nothing retrofits one — the signature is made at publish time.
       # This tag is how 0.2.5 becomes the first archive a client can verify.
-      cajeta-version: v0.26.0
+      #
+      # Raised to v0.29.0 for the 0.3.0 cut. The reason is the SOURCE, and it
+      # was measured both ways rather than assumed. v0.29.0 REFUSES the tree as
+      # tagged at v0.2.5: `cajeta build` over `git archive v0.2.5` exits 1 with
+      # CAJETA_ERROR_CAPTURED_BORROW_PARAM on PredMatcher's `pred` field, which
+      # is the closure-title check that arrived with the ownership-title
+      # classifier. This tree takes the predicate OWNED instead, so the store
+      # records a title, the build is clean and the whole chain is green. A
+      # plain `#=` silences that check without fixing anything: the formal was
+      # still plain, so a name lent and the matcher outlived it. So 0.2.5 is an
+      # archive nobody on the current toolchain can rebuild from its own tag,
+      # and the tag that repairs that has to be cut by a toolchain that has the
+      # check.
+      #
+      # Two things this raise is NOT, both checked so the comment claims no
+      # more than it earned. It is not a compile floor: v0.26.0 still builds
+      # this tree, `#` formals and all. It is not an ABI rescue either: a .cja
+      # built by v0.26.0 links into a tour compiled
+      # by v0.29.0, and that binary runs every demo green. What v0.26.0 cannot
+      # do is tell us the source is wrong, and for the package every other
+      # repo's tests link against, that is what CI is here for.
+      cajeta-version: v0.29.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test
