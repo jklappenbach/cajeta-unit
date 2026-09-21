@@ -7,6 +7,8 @@ cd "$(dirname "$0")/.."
 
 cajeta test
 
+./scripts/check-argthat-transfer.sh
+
 ./samples/tour/run.sh
 
 CAJETA="$(command -v cajeta)" ./scripts/check-library-tour-coverage.sh \

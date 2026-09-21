@@ -101,6 +101,20 @@ public class SelfTest {
         return problems;
     }
 
+    /**
+     * Builds a matcher from a NAMED closure local, so the predicate's frame is
+     * gone before the caller matches. `argThat` takes the predicate owned, so
+     * the title leaves with the matcher instead of dangling behind it.
+     */
+    static #Matcher overTen() {
+        int64 floor = 10;
+        (Object) -> boolean p = (Object o) -> {
+            Int64 i = (Int64) o;
+            return i.value() > floor;
+        };
+        return ArgMatchers.argThat(#p);
+    }
+
     public static int32 run() {
         System.stdout.println("== cajeta-unit bootstrap (verify the engine's pass AND fail paths) ==");
         int32 boot = SelfTest.bootstrap();
@@ -181,6 +195,20 @@ public class SelfTest {
                 Int64 i = (Int64) o;
                 return i.value() > 10;
             }).matches(Int64.of(5)));
+        });
+
+        t.test("matchers: a moved predicate stays live after its frame dies", () -> {
+            Matcher m #= SelfTest.overTen();
+            int64 k = 0;
+            int64 seen = 0;
+            while (k < 5000) {
+                Int64 churn #= Int64.of(k);
+                seen = seen + churn.value();
+                k = k + 1;
+            }
+            Assert.isTrue(seen > 0);
+            Assert.isTrue(m.matches(Int64.of(50)));
+            Assert.isFalse(m.matches(Int64.of(5)));
         });
 
         t.test("MockEngine records invocations and arguments", () -> {

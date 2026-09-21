@@ -47,8 +47,12 @@ public final class ArgMatchers {
         return heap NullMatcher(false);
     }
 
-    /** Matches when `pred` accepts the (boxed) argument. Mockito's `argThat(...)`. */
-    public static #Matcher argThat((Object) -> boolean pred) {
-        return heap PredMatcher(#pred);   // forward the title that arrived (cajeta ownership 5.13)
+    /**
+     * Matches when `pred` accepts the (boxed) argument. Mockito's `argThat(...)`.
+     * Takes the predicate owned: the matcher outlives the caller's frame, so a
+     * borrowed closure would dangle behind it.
+     */
+    public static #Matcher argThat(#(Object) -> boolean pred) {
+        return heap PredMatcher(#pred);
     }
 }
