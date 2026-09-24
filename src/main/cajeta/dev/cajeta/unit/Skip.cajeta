@@ -1,0 +1,46 @@
+package dev.cajeta.unit;
+
+import cajeta.error.RecoverableException;
+import cajeta.lang.String;
+
+/**
+ * Skip — a test declares, at run time, that it cannot run here, and the
+ * runner counts it as SKIPPED rather than PASSED.
+ *
+ * Before this, a test that found no device, no fixture, or no kernel
+ * printed a note and returned, and the summary counted a pass. Eighty-seven
+ * such passes on one backend did no device work and were invisible in the
+ * headline number (cajeta xpu-kernel-adaptor plan, 1.6.2). A skip is a
+ * different outcome from a pass and the count says so.
+ *
+ * `Skip.because(why)` throws; the runner recognises the throw by the flag
+ * this class arms, not by the exception's type, because `instanceof`
+ * against a user exception subtype across packages is not relied on in the
+ * runner. The flag is consumed by the runner on the way to the record, so
+ * a stale arm cannot leak into the next test.
+ *
+ * <pre>
+ * if (!Device.kernelAvailable("q4kF16CoopX3Kernel")) {
+ *     Skip.because("q4kF16CoopX3Kernel does not lower on " + Device.activeBackend());
+ * }
+ * </pre>
+ */
+public final class Skip {
+
+    static boolean armed;
+
+    public Skip() { return; }
+
+    /** Leave the test now; it counts as skipped, with `why` in the record. */
+    public static void because(String why) {
+        Skip.armed = true;
+        throw heap RecoverableException("skipped: " + why);
+    }
+
+    /** True once per `because`: the runner takes the arm and clears it. */
+    public static boolean take() {
+        boolean a = Skip.armed;
+        Skip.armed = false;
+        return a;
+    }
+}

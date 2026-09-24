@@ -1,5 +1,7 @@
 package dev.cajeta.unit.selftest.discovery;
 
+import dev.cajeta.unit.Skip;
+
 import dev.cajeta.unit.Assert;
 
 /**
@@ -24,6 +26,12 @@ public class ExampleTest {
     public void setUp() {
         this.counter = 10;
         return;
+    }
+
+    /** Discovered, invoked, and counted as SKIPPED by the reflective Runner. */
+    @Test
+    public void skipsItselfAtRunTime() {
+        Skip.because("the discovery self-test proving a run-time skip");
     }
 
     @Test

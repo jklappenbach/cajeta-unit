@@ -50,6 +50,11 @@ public final class TestRunner {
             this.passed = this.passed + 1;
             System.stdout.println("  ✓ PASS  " + name);
         } catch (Exception e) {
+            if (Skip.take()) {
+                this.skipped = this.skipped + 1;
+                System.stdout.println("  ○ SKIP  " + name + "  (" + e.message + ")");
+                return;
+            }
             this.failed = this.failed + 1;
             String line = "  ✗ FAIL  " + name + "  ::  " + e.message;
             System.stdout.println(line);
@@ -73,6 +78,11 @@ public final class TestRunner {
         System.stdout.println(line);
         this.failureLines.add(#line);
     }
+
+    /** The counts so far, for a harness that checks the runner itself. */
+    public int32 passedCount() { return this.passed; }
+    public int32 failedCount() { return this.failed; }
+    public int32 skippedCount() { return this.skipped; }
 
     /** Skip a test, noting why. Counts as skipped, never fails the run. */
     public void skip(String name, String reason) {

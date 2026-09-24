@@ -3,6 +3,7 @@ package dev.cajeta.unit.selftest;
 import dev.cajeta.unit.Assert;
 import dev.cajeta.unit.AssertionFailure;
 import dev.cajeta.unit.TestRunner;
+import dev.cajeta.unit.Skip;
 import dev.cajeta.unit.Runner;
 import dev.cajeta.unit.CallLog;
 import dev.cajeta.unit.Verify;
@@ -154,6 +155,22 @@ public class SelfTest {
         });
         t.test("float isCloseTo within tolerance", () -> {
             Assert.thatFloat(3.14159).isCloseTo(3.14, 0.01);
+        });
+        // 1.6.2 of the cajeta xpu-kernel-adaptor plan: a test that says it
+        // cannot run here is SKIPPED, not PASSED, and not FAILED either.
+        t.test("Skip.because counts as skipped", () -> {
+            TestRunner inner = heap TestRunner();
+            inner.test("skips", () -> {
+                Skip.because("no device on this box");
+                Assert.fail("not reached: Skip.because throws");
+            });
+            inner.test("still fails", () -> { Assert.fail("a real failure"); });
+            inner.test("still passes", () -> { Assert.isTrue(true); });
+            Assert.equals(1L, (int64) inner.skippedCount());
+            Assert.equals(1L, (int64) inner.failedCount());
+            Assert.equals(1L, (int64) inner.passedCount());
+            // The arm is consumed: a plain failure after a skip is a failure.
+            Assert.isFalse(Skip.take());
         });
         t.test("assertThrows catches a throwing body", () -> {
             Assert.assertThrows(() -> { Assert.fail("expected"); });

@@ -158,8 +158,13 @@ public final class Runner {
     }
 
     static void recordResult(TestRunner runner, String name, boolean ok, String msg) {
+        // A throw that Skip armed is a skip, not a failure. Take the arm
+        // either way so nothing stale reaches the next test.
+        boolean skipped = Skip.take();
         if (ok) {
             runner.recordPass(name);
+        } else if (skipped) {
+            runner.skip(name, msg);
         } else {
             runner.recordFail(name, msg);
         }
