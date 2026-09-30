@@ -172,6 +172,22 @@ public class SelfTest {
             // The arm is consumed: a plain failure after a skip is a failure.
             Assert.isFalse(Skip.take());
         });
+        // CAJETA_UNIT_FILTER: a partial run of a binary that takes minutes to
+        // build, selected by substrings of the qualified test name.
+        t.test("CAJETA_UNIT_FILTER admits by substring, everything when unset", () -> {
+            Runner.setFilterForTest("");
+            Assert.isFalse(Runner.filtered());
+            Assert.isTrue(Runner.admitted("pkg.Suite::anything()"));
+            Runner.setFilterForTest("Scheduler,WordForm");
+            Assert.isTrue(Runner.filtered());
+            Assert.isTrue(Runner.admitted("dev.cajeta.llm.selftest.SchedulerTest::a()"));
+            Assert.isTrue(Runner.admitted("test.NvptxWordFormTests::b()"));
+            Assert.isFalse(Runner.admitted("dev.cajeta.llm.selftest.MoeTest::c()"));
+            Runner.setFilterForTest("");
+            Assert.isFalse(Runner.filtered());
+            Assert.isTrue(Runner.admitted("dev.cajeta.llm.selftest.MoeTest::c()"));
+            Runner.setFilterForTest(null);
+        });
         t.test("assertThrows catches a throwing body", () -> {
             Assert.assertThrows(() -> { Assert.fail("expected"); });
         });

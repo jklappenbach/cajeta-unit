@@ -35,9 +35,63 @@ public final class Runner {
     static final String AFTER_EACH  = "code.AfterEach";
     static final String DISABLED    = "code.Disabled";
 
+    /**
+     * `CAJETA_UNIT_FILTER`: a comma-separated list of substrings; when set,
+     * only the tests whose qualified name contains one of them run, and the
+     * others are neither run nor reported. For iterating on one suite of a
+     * binary that takes minutes to build and longer to run whole. A gate
+     * that reads the whole run (a kernel census) should stand down when
+     * {@link #filtered} says the run was partial.
+     */
+    static String filter = null;
+    static boolean filterRead = false;
+
+    static String filterSpec() {
+        if (!Runner.filterRead) {
+            Runner.filterRead = true;
+            Runner.filter #= System.env.get("CAJETA_UNIT_FILTER");
+        }
+        return Runner.filter;
+    }
+
+    /** Pin the filter from a test of the runner itself (null = re-read the
+     *  environment on the next ask). */
+    public static void setFilterForTest(String spec) {
+        Runner.filterRead = spec != null;
+        Runner.filter #= spec == null ? null : ("" + spec);
+    }
+
+    /** True when `CAJETA_UNIT_FILTER` selected a subset of the tests. */
+    public static boolean filtered() {
+        String f = Runner.filterSpec();
+        return f != null && f.byteLength() > 0;
+    }
+
+    /** Does the filter admit `name`? Everything, when there is no filter. */
+    public static boolean admitted(String name) {
+        String f = Runner.filterSpec();
+        if (f == null || f.byteLength() == 0) { return true; }
+        int64 p = 0;
+        int64 len = f.size();
+        while (p < len) {
+            int64 c = f.indexOfFrom(",", p);
+            if (c < 0L) { c = len; }
+            if (c > p) {
+                String part #= f.substring((int32) p, (int32) c);
+                if (name.indexOf(part) >= 0L) { return true; }
+            }
+            p = c + 1L;
+        }
+        return false;
+    }
+
     /** Discover and run every `@Test` method in the binary; report + exit code. */
     public static int32 runAll() {
         TestRunner runner = heap TestRunner();
+        if (Runner.filtered()) {
+            System.stdout.println("[filter] CAJETA_UNIT_FILTER=" + Runner.filterSpec()
+                + ": a partial run");
+        }
         // Bounded discovery. `allClasses()` forced keep-all on every lean
         // link of every consumer's test binary; the method-annotation
         // enumerator with a LITERAL selector (the literal is what the lean
@@ -67,6 +121,9 @@ public final class Runner {
             }
             // getName() is already the qualified `Class::method(params)` form.
             String name #= t.getName();
+            if (!Runner.admitted(name)) {
+                continue;
+            }
             if (t.hasAnnotation(DISABLED)) {
                 runner.skip(name, "@Disabled");
                 continue;
