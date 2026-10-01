@@ -2,13 +2,15 @@ package tour.runner;
 
 import tour.DemoClass;
 import dev.cajeta.unit.Assert;
+import dev.cajeta.unit.Skip;
 import dev.cajeta.unit.TestRunner;
 
 // Showcases the runner + reporter — dev.cajeta.unit.TestRunner: register named
 // tests, run them inside try/catch, and print a pass/fail/skip report with an
-// exit code. (cajeta-unit also discovers @Test methods reflectively via
-// Runner.runAll() — see docs/discovery.md; this demo uses explicit registration
-// so it is self-contained inside the tour.)
+// exit code. A test that finds it cannot run here calls Skip.because(why)
+// and counts as skipped, not passed. (cajeta-unit also discovers @Test
+// methods reflectively via Runner.runAll() — see docs/discovery.md; this demo
+// uses explicit registration so it is self-contained inside the tour.)
 public class RunnerDemo extends DemoClass {
     public void execute() {
         System.stdout.println("");
@@ -22,9 +24,13 @@ public class RunnerDemo extends DemoClass {
             Assert.that("hi").hasLength(2);
         });
         runner.skip("pending feature", "demonstrates skip");
+        runner.test("needs a GPU", () -> {
+            Skip.because("no device on this box");
+        });
 
         int32 rc = runner.summary();
         Assert.that(rc).isEqualTo(0);
+        Assert.that(runner.skippedCount()).isEqualTo(2);
         System.stdout.println("  runner exit code = " + rc + " (0 = all green)");
     }
 }
