@@ -24,7 +24,7 @@ public class StubRule {
     boolean willThrow;
 
     public StubRule(String method) {
-        this.method = method;
+        this.method #= method;
         this.hasMatchers = false;
         this.returns = heap ArrayList<Object>();
         this.idx = 0;

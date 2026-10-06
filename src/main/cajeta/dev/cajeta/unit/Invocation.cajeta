@@ -24,7 +24,7 @@ public class Invocation {
     Object[] args;
 
     public Invocation(String method, #Object[] args) {
-        this.method = method;
+        this.method #= method;
         this.args = #args;
     }
 

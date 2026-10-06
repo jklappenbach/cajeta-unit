@@ -10,7 +10,7 @@ public final class StringSubject {
     String actual;
 
     public StringSubject(String actual) {
-        this.actual = actual;
+        this.actual #= actual;
     }
 
     public void isEqualTo(String expected) {

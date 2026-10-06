@@ -69,7 +69,12 @@ jobs:
       # by v0.29.0, and that binary runs every demo green. What v0.26.0 cannot
       # do is tell us the source is wrong, and for the package every other
       # repo's tests link against, that is what CI is here for.
-      cajeta-version: v0.29.0
+      #
+      # Raised to v0.35.0 for the 0.3.3 cut, a floor again: v0.35.0 rejects a
+      # kept parameter stored with `=` (KEEP_NEEDS_SHARP_STORE), and a consumer
+      # re-checks this archive's sources, so 0.3.2 fails every repo whose tests
+      # link it. The four stores now spell `#=`.
+      cajeta-version: v0.35.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test
