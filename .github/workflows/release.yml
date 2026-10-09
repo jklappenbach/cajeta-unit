@@ -76,7 +76,8 @@ jobs:
       # link it. The four stores now spell `#=`.
       #
       # Raised to v0.36.0 for the 0.3.4 cut, the fleet republish on that release.
-      cajeta-version: v0.36.0
+      # Raised to v0.38.0 for the 0.3.5 cut, the fleet republish on that release.
+      cajeta-version: v0.38.0
       # `cajeta test` builds SelfTest and runs it. SelfTest deliberately
       # hand-verifies the engine before trusting it, then runs the reflective
       # @Test suite through the now-trusted engine — you cannot test a test
