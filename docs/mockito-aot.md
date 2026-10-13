@@ -7,9 +7,8 @@ dynamic class generation (`Proxy.newProxyInstance` does not exist), so a mock is
 **hand-written subclass** that forwards each call to a [`MockEngine`](../src/main/cajeta/dev/cajeta/unit/MockEngine.cajeta).
 The *API* mimics Mockito; the *mechanism* is ordinary monomorphized library code.
 
-This is the gomock/mockall model. The longer-term goal is to **generate** these
-subclasses from an annotation (`@Mock`); that needs a compiler codegen hook (see
-`unit-spec.md` §5/§9). Everything below works **today** and is self-tested in
+This is the gomock/mockall model. The compiler can also **generate** the mock:
+see [Generated mocks](#generated-mocks). Everything below is self-tested in
 `dev.cajeta.unit.selftest.SelfTest`.
 
 ## The recipe: a hand-written mock
@@ -65,6 +64,54 @@ Mock.when(gw.engine, "charge").thenThrow(#(heap DeclineError("no funds"))); // t
 - The builder method is `withArgs` (not `with` — a reserved word) and takes a
   `Matcher[]` (empty set / no `withArgs` ⇒ matches any arguments).
 - `thenThrow` takes a `RecoverableException` (or a domain subclass).
+- `thenAnswer(() -> #Object f)` answers each call with a fresh value from `f`.
+
+### Methods that return ownership
+
+A mocked `#R` method must give its caller a value the caller frees, and
+`handle` answers with a borrow the engine keeps. Such a method calls
+`engine.handleOwned(name, #a)` instead. It answers with a fresh value from
+`thenAnswer`, or else moves out the next queued `thenReturn` value, each
+handed over once, and then answers `null`.
+
+```cajeta
+public #UserRecord find(String id) {
+    Object[] a = [ id ];
+    UserRecord r #= (UserRecord) this.engine.handleOwned("find", #a);
+    return #r;
+}
+
+Mock.when(dir.engine, "find").thenAnswer(() -> heap UserRecord("u1", "ada"));
+```
+
+## Generated mocks
+
+`@GenerateMock` on a class or an interface makes the compiler write
+`Mock<Name>` beside it, the recipe above for every overridable method:
+- a class's whole chain, with `final`, `static` and `private` methods and
+  `Object`'s own left alone;
+- an interface's methods and its parents' methods, through `implements`;
+- `#R` methods through `handleOwned`.
+
+A field annotated `@Mock Gateway gw;` is given a `MockGateway`.
+
+```cajeta
+@GenerateMock
+public interface UserDirectory { #UserRecord find(String id); }
+
+MockUserDirectory dir = heap MockUserDirectory();
+Mock.when(dir.engine, "find").thenAnswer(() -> heap UserRecord("u1", "ada"));
+```
+
+The generated mock is also a `@TestComponent` for its target: under the
+`test` profile the DI graph injects it wherever a production component
+implementing the same interface would go, and under any other profile it is
+ignored. A declared type already named `Mock<Name>` is
+`CAJETA_ERROR_MOCK_NAME_TAKEN`.
+
+Interface targets, owned returns and the test-profile substitution need
+cajeta v0.42.0 or later, and a mock with a `#R` method needs this library's
+`handleOwned` (after 0.3.6). Class targets work on v0.39.0.
 
 ## Argument matchers — `ArgMatchers`
 
@@ -132,9 +179,9 @@ engine**. `verifyWith(engine, name, #Matcher[])` adds argument matching.
 | argument matching in verify | ✅ | `timesWith` / `neverWith` |
 | argument capture | ✅ | `engine.argOf` / `lastArgOf` |
 | in-order verification | ✅ (per engine) | cross-engine ordering: later |
-| `thenAnswer` (dynamic callback) | ⛔ | a func-field returning `Object` fails IR-verify today |
+| `thenAnswer` (dynamic callback) | ✅ | a fresh owned value per call; `handleOwned` for `#R` methods |
 | spies (partial mocks) | ⛔ | planned via `@Around` aspects |
-| auto-generated `@Mock` | ⛔ | needs a compiler codegen hook |
+| auto-generated mocks | ✅ | `@GenerateMock` on the target, `@Mock` on a field |
 | `getAllValues()` captor list | ⛔ | use `argOf(callIndex, …)` per call |
 
 ## Ownership & toolchain notes
