@@ -38,6 +38,15 @@ public class Stubbing {
         return this;
     }
 
+    /**
+     * Answer each call with a fresh value from `f`, for a mocked method that
+     * returns ownership (`#R`): the generated mock hands the value to its caller.
+     */
+    public Stubbing thenAnswer(() -> #Object f) {
+        this.rule.setAnswer(f);
+        return this;
+    }
+
     /** Program the rule to throw `ex` (owned) instead of returning. */
     public void thenThrow(#RecoverableException ex) {
         this.rule.setThrow(#ex);

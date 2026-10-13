@@ -22,6 +22,8 @@ public class StubRule {
     int32 idx;
     RecoverableException toThrow;
     boolean willThrow;
+    () -> #Object answer;
+    boolean hasAnswer;
 
     public StubRule(String method) {
         this.method #= method;
@@ -30,6 +32,8 @@ public class StubRule {
         this.idx = 0;
         this.willThrow = false;
         this.toThrow = null;
+        this.answer = null;
+        this.hasAnswer = false;
     }
 
     /** Restrict this rule to calls whose arguments satisfy `matchers` (owned). */
@@ -41,6 +45,32 @@ public class StubRule {
     /** Append a return value (consecutive calls advance through these). Owns `v`. */
     public void addReturn(#Object v) {
         this.returns.add(#v);
+    }
+
+    /** Answer each call with a fresh value from `f`; the value is the caller's. */
+    public void setAnswer(() -> #Object f) {
+        this.answer #= f;
+        this.hasAnswer = true;
+    }
+
+    /**
+     * The answer for a method that returns ownership: a fresh value from the
+     * `thenAnswer` function, else the next queued `thenReturn` value moved out
+     * (each one is handed over once), else null.
+     */
+    public #Object nextOwnedAnswer() {
+        if (this.willThrow) {
+            throw this.toThrow;
+        }
+        if (this.hasAnswer) {
+            () -> #Object f = this.answer;
+            return f();
+        }
+        if (this.returns.count() == 0) {
+            return null;
+        }
+        Object v #= this.returns.removeAt(0);
+        return #v;
     }
 
     /** Program this rule to throw `ex` instead of returning. Owns `ex`. */

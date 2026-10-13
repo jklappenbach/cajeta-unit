@@ -57,6 +57,25 @@ public class MockEngine {
     }
 
     /**
+     * Record a call to a method that returns ownership and answer it with a
+     * value the engine no longer holds (`StubRule.nextOwnedAnswer`). A generated
+     * mock calls this for a `#R` method and returns the result to its caller.
+     */
+    public #Object handleOwned(String method, #Object[] args) {
+        this.calls.add(heap Invocation(method, #args));
+        Invocation inv = this.calls.get((int32) this.calls.count() - 1);
+        int32 i = (int32) this.rules.count() - 1;
+        while (i >= 0) {
+            StubRule rule = this.rules.get(i);
+            if (rule.matchesCall(method, inv)) {
+                return rule.nextOwnedAnswer();
+            }
+            i = i - 1;
+        }
+        return null;
+    }
+
+    /**
      * Shared argument matching used by both stub-rule resolution and
      * verification: does `inv` target `method` and satisfy the matcher set?
      * An empty matcher set (`hasMatchers == false`) matches any arguments.

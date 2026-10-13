@@ -304,6 +304,27 @@ public class SelfTest {
             Object[] u0 = [ ];
             Assert.isTrue(eng.handle("unstubbed", #u0) == null);
         });
+        t.test("owned answers: thenAnswer makes a fresh value each call; queued returns move out once", () -> {
+            MockEngine eng = heap MockEngine();
+            Mock.when(eng, "make").thenAnswer(() -> heap Coin(7));
+            Object[] a0 = [ ];
+            Object[] a1 = [ ];
+            Coin x #= (Coin) eng.handleOwned("make", #a0);
+            Coin y #= (Coin) eng.handleOwned("make", #a1);
+            Assert.that(x.cents + y.cents).isEqualTo(14);
+            x.cents = 1;
+            Assert.that(y.cents).isEqualTo(7);
+
+            Mock.when(eng, "take").thenReturn(#(heap Coin(3))).thenReturn(#(heap Coin(4)));
+            Object[] t0 = [ ];
+            Object[] t1 = [ ];
+            Object[] t2 = [ ];
+            Coin first #= (Coin) eng.handleOwned("take", #t0);
+            Coin second #= (Coin) eng.handleOwned("take", #t1);
+            Assert.that(first.cents * 10 + second.cents).isEqualTo(34);
+            Assert.isTrue(eng.handleOwned("take", #t2) == null);
+            Assert.that(eng.callCount("make") + eng.callCount("take")).isEqualTo(5);
+        });
         t.test("stubbing: thenThrow makes the call throw", () -> {
             MockEngine eng = heap MockEngine();
             Mock.when(eng, "boom").thenThrow(#(heap RecoverableException(#("kaboom"))));
