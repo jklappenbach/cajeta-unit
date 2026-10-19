@@ -12,7 +12,13 @@ CAJETA="${CAJETA:-cajeta}"
 # Always rebuild. A leftover archive from an earlier source state compiles the
 # reject probe happily and turns this check green for the wrong reason.
 ( cd "$REPO_ROOT" && "$CAJETA" build )
-CJA="$( ls "$REPO_ROOT"/build/archive/dev.cajeta.unit-*.cja | head -1 )"
+# The archive this build wrote, by the version cajeta.json declares. A glob
+# picks the lexically first archive, and build/archive keeps every version
+# ever built: on a long-lived checkout that was 0.2.3, from before argThat
+# took its predicate owned, so the reject probe compiled.
+VERSION="$( sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$REPO_ROOT/cajeta.json" | head -1 )"
+CJA="$REPO_ROOT/build/archive/dev.cajeta.unit-$VERSION.cja"
+[ -f "$CJA" ] || { echo "FAIL: the build wrote no $CJA" >&2; exit 1; }
 
 WORK="$REPO_ROOT/tmp/argthat-transfer"
 rm -rf "$WORK"

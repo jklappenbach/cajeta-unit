@@ -15,7 +15,11 @@ CAJETA="${CAJETA:-cajeta}"
 # 1. Build the library this tour links against.
 ( cd "$REPO_ROOT" && "$CAJETA" build )
 
-CJA="$( ls "$REPO_ROOT"/build/archive/dev.cajeta.unit-*.cja | head -1 )"
+# The archive this build wrote, by the version cajeta.json declares: a glob
+# picks the lexically first of every version build/archive has kept (0.2.3,
+# without Skip, on a long-lived checkout).
+VERSION="$( sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$REPO_ROOT/cajeta.json" | head -1 )"
+CJA="$REPO_ROOT/build/archive/dev.cajeta.unit-$VERSION.cja"
 if [[ ! -f "$CJA" ]]; then
     echo "error: dev.cajeta.unit .cja not found under $REPO_ROOT/build/archive" >&2
     exit 1
