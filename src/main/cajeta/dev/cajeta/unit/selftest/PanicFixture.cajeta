@@ -1,0 +1,22 @@
+package dev.cajeta.unit.selftest;
+
+import dev.cajeta.unit.AssertionFailure;
+
+/**
+ * Bodies the runner self-test invokes directly (no `@Test`, so discovery
+ * never runs them): a runtime panic, which is a legacy integer throw (code 3
+ * is CAJETA_PANIC_TITLE_MISS), and an ordinary assertion failure.
+ */
+public class PanicFixture {
+    public PanicFixture() {
+        return;
+    }
+
+    public static void panics() {
+        throw 3;
+    }
+
+    public static void fails() {
+        throw heap AssertionFailure("expected 2 but was 3");
+    }
+}

@@ -20,6 +20,9 @@ import dev.cajeta.unit.selftest.doubles.Gateway;
 import dev.cajeta.unit.selftest.doubles.MockGateway;
 import cajeta.lang.Int64;
 import cajeta.error.RecoverableException;
+import cajeta.lang.Optional;
+import cajeta.reflect.Class;
+import cajeta.reflect.Method;
 
 /**
  * cajeta-unit's own test suite — the framework, tested with itself.
@@ -430,6 +433,36 @@ public class SelfTest {
             Assert.that(((Int64) gw.engine.lastArgOf("charge", 0)).value()).isEqualTo(2000);
         });
 
+        // A runtime panic is a legacy integer throw; a catch-all binds it as a
+        // reference no field read may touch. The runner must record it as a
+        // failure and go on, not fault reading `e.message`.
+        t.test("a test that throws a runtime panic fails, and the run goes on", () -> {
+            TestRunner inner = heap TestRunner();
+            int32 idx = SelfTest.methodIndex("dev.cajeta.unit.selftest.PanicFixture", "panics");
+            Assert.isTrue(idx >= 0);
+            Optional<Class<?>> c = Class.forName("dev.cajeta.unit.selftest.PanicFixture");
+            Runner.runOneForTest(inner, c.get(), idx, "PanicFixture::panics()");
+            Assert.that(inner.failedCount()).isEqualTo(1);
+            String line #= inner.lastFailureLine();
+            Assert.isTrue(line.indexOf("panic") >= 0L);
+        });
+        t.test("an assertion failure still reports its message", () -> {
+            TestRunner inner = heap TestRunner();
+            int32 idx = SelfTest.methodIndex("dev.cajeta.unit.selftest.PanicFixture", "fails");
+            Optional<Class<?>> c = Class.forName("dev.cajeta.unit.selftest.PanicFixture");
+            Runner.runOneForTest(inner, c.get(), idx, "PanicFixture::fails()");
+            Assert.that(inner.failedCount()).isEqualTo(1);
+            String line #= inner.lastFailureLine();
+            Assert.isTrue(line.indexOf("expected 2 but was 3") >= 0L);
+        });
+        t.test("TestRunner.test records a panicking body as a failure", () -> {
+            TestRunner inner = heap TestRunner();
+            inner.test("panicking body", () -> {
+                PanicFixture.panics();
+            });
+            Assert.that(inner.failedCount()).isEqualTo(1);
+        });
+
         t.skip("a deliberately skipped test", "demonstrates skip");
 
         int32 rc = t.summary();
@@ -453,5 +486,18 @@ public class SelfTest {
         }
 
         return rc;
+    }
+
+    // The index of `name` among `className`'s methods, or -1.
+    static int32 methodIndex(String className, String name) {
+        Optional<Class<?>> c = Class.forName(className);
+        if (!c.isPresent()) return -1;
+        Class<?> k = c.get();
+        for (int32 i = 0; i < k.getMethodCount(); i++) {
+            Method m #= k.getMethod(i);
+            String n #= m.getName();
+            if (n.indexOf("::" + name + "(") >= 0L) return i;
+        }
+        return -1;
     }
 }

@@ -1,5 +1,9 @@
 package dev.cajeta.unit;
 
+import cajeta.error.RecoverableException;
+import cajeta.error.Throwable;
+import cajeta.error.UnrecoverableException;
+
 import cajeta.reflect.Class;
 import cajeta.reflect.Method;
 import cajeta.lang.String;
@@ -164,12 +168,20 @@ public final class Runner {
             String smsg = "";
             try {
                 t.invokeObject(null);
-            } catch (Exception e) {
+            } catch (RecoverableException e) {
                 sok = false;
                 // COPY, not `smsg = e.message` — see the note above runOne.
                 if (e.message != null) {
                     smsg #= e.message.substring(0, e.message.byteLength());
                 }
+            } catch (UnrecoverableException e) {
+                sok = false;
+                if (e.message != null) {
+                    smsg #= e.message.substring(0, e.message.byteLength());
+                }
+            } catch (Throwable e) {
+                sok = false;
+                smsg #= Runner.PANIC_MESSAGE();
             }
             recordResult(runner, name, sok, smsg);
             return;
@@ -182,23 +194,61 @@ public final class Runner {
         try {
             invokeLifecycle(c, inst, BEFORE_EACH);
             t.invokeObject(inst);
-        } catch (Exception e) {
+        } catch (RecoverableException e) {
             ok = false;
             if (e.message != null) {
                 msg #= e.message.substring(0, e.message.byteLength());
             }
+        } catch (UnrecoverableException e) {
+            ok = false;
+            if (e.message != null) {
+                msg #= e.message.substring(0, e.message.byteLength());
+            }
+        } catch (Throwable e) {
+            ok = false;
+            msg #= Runner.PANIC_MESSAGE();
         }
         try {
             invokeLifecycle(c, inst, AFTER_EACH);
-        } catch (Exception e) {
+        } catch (RecoverableException e) {
             if (ok) {
                 ok = false;
                 if (e.message != null) {
                     msg #= e.message.substring(0, e.message.byteLength());
                 }
             }
+        } catch (UnrecoverableException e) {
+            if (ok) {
+                ok = false;
+                if (e.message != null) {
+                    msg #= e.message.substring(0, e.message.byteLength());
+                }
+            }
+        } catch (Throwable e) {
+            if (ok) {
+                ok = false;
+                msg #= Runner.PANIC_MESSAGE();
+            }
         }
         recordResult(runner, name, ok, msg);
+    }
+
+    /**
+     * The failure message for a throw that is neither a RecoverableException
+     * nor an UnrecoverableException. A runtime panic (a `#` return of a value
+     * with no title is CAJETA_PANIC_TITLE_MISS, code 3) is a legacy integer
+     * throw: a catch-all binds it as a reference no field read may touch, so
+     * the clause names the kind of throw and never reads the value.
+     */
+    public static #String PANIC_MESSAGE() {
+        return "" + "the test raised a runtime panic (an integer throw such as TITLE_MISS) "
+            + "or a Throwable outside RecoverableException/UnrecoverableException; "
+            + "run it alone to see the runtime's report";
+    }
+
+    /** Run one method of `c` by index, as discovery would, into `runner` (runner self-tests). */
+    public static void runOneForTest(TestRunner runner, Class<?> c, int32 testIndex, String name) {
+        runOne(runner, c, testIndex, name);
     }
 
     /** Invoke every method on `c` bearing `annotationName`, on `inst`. */

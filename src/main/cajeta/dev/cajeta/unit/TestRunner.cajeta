@@ -1,5 +1,9 @@
 package dev.cajeta.unit;
 
+import cajeta.error.RecoverableException;
+import cajeta.error.Throwable;
+import cajeta.error.UnrecoverableException;
+
 import cajeta.collection.ArrayList;
 import cajeta.lang.String;
 import cajeta.lang.Int64;
@@ -49,17 +53,35 @@ public final class TestRunner {
             body();
             this.passed = this.passed + 1;
             System.stdout.println("  ✓ PASS  " + name);
-        } catch (Exception e) {
-            if (Skip.take()) {
-                this.skipped = this.skipped + 1;
-                System.stdout.println("  ○ SKIP  " + name + "  (" + e.message + ")");
-                return;
-            }
-            this.failed = this.failed + 1;
-            String line = "  ✗ FAIL  " + name + "  ::  " + e.message;
-            System.stdout.println(line);
-            this.failureLines.add(#line);
+        } catch (RecoverableException e) {
+            this.thrown(name, e.message);
+        } catch (UnrecoverableException e) {
+            this.thrown(name, e.message);
+        } catch (Throwable e) {
+            // A runtime panic binds here as a value no field read may touch.
+            String panic #= Runner.PANIC_MESSAGE();
+            this.thrown(name, panic);
         }
+    }
+
+    // A throw out of a `test(...)` body: a skip Skip armed, else a failure.
+    void thrown(String name, String message) {
+        if (Skip.take()) {
+            this.skipped = this.skipped + 1;
+            System.stdout.println("  ○ SKIP  " + name + "  (" + message + ")");
+            return;
+        }
+        this.failed = this.failed + 1;
+        String line = "  ✗ FAIL  " + name + "  ::  " + message;
+        System.stdout.println(line);
+        this.failureLines.add(#line);
+    }
+
+    /** The last failure line recorded, or "" (runner self-tests). */
+    public #String lastFailureLine() {
+        int32 n = this.failureLines.count();
+        if (n == 0) return "" + "";
+        return "" + this.failureLines.get(n - 1);
     }
 
     /**
